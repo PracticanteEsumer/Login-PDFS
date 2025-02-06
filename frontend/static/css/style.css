@@ -1,0 +1,217 @@
+/* Fuente para la página */
+@font-face {
+    font-family: 'Poppins';
+    src: url('../fonts/Poppins-Medium.ttf') format('truetype');
+    font-weight: normal; /* Define el peso de la fuente como normal */
+}
+
+/* Fuente para todo el cuerpod e la página */
+body{
+    font-family: 'Poppins', sans-serif; /* Aplica la fuente a todo el cuerpo */
+}
+
+/* Reset de márgenes y padding para asegurar que no haya valores inesperados */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; /* Para evitar que padding o bordes afecten el tamaño */
+}
+
+/* Estilo general para el contenedor */
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* Alinea los elementos al principio (arriba) */
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    background-color: white;
+}
+
+/* Estilo para la imagen del logo */
+.logo-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 0; /* Elimina el espacio entre la imagen y la parte superior de la pantalla */
+    margin-bottom: 0; /* Reduce cualquier espacio innecesario debajo de la imagen */
+}
+
+.top-image {
+    width: 350%; /* Ajusta el tamaño de la imagen */
+    height: auto; /* Mantiene la proporción de la imagen */
+    max-width: 100%;
+    padding-bottom: 20%;
+    padding-top: 20%;
+}
+
+/* Estilo del formulario */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    border: 2px solid #202B52; /* Borde azul */
+    border-radius: 10px;
+    background-color: white;
+    width: 100%;
+    max-width: 400px; /* Limita el tamaño del formulario */
+}
+
+/* Estilo del mensaje de bienvenida */
+.welcome-message {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color:#002244;
+}
+
+/* Contenedor para los inputs */
+.input-container {
+    width: 100%;
+    margin-bottom: 15px; /* Espacio entre los inputs */
+}
+
+/* Estilo para los inputs */
+.input {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    border: 2px solid #202B52;
+    border-radius: 10px;
+    background-color: #f7f7f7;
+    color: #202B52;
+    box-sizing: border-box; /* Asegura que el padding no afecte el tamaño */
+}
+
+/* Estilo del botón */
+.submit-btn {
+    font-family: 'Poppins', sans-serif; /* Aplica la fuente Poppins al botón */
+    background-color: #003366; /* Azul oscuro */
+    color: white;
+    padding: 15px 30px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.3s ease;
+    width: 100%; /* Hace que el botón ocupe todo el ancho */
+}
+
+/* Efecto al pasar el cursor sobre el botón */
+.submit-btn:hover {
+    background-color: #002244; /* Azul más oscuro */
+}
+
+#success-message, #error-message {
+    display: none; /* Ambos divs están ocultos al inicio */
+    margin-top: 20px;
+}
+
+#files-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.file-item {
+    display: block;
+    margin: 10px;
+    padding: 10px;
+    background-color: #e2e2e2;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #333;
+    width: 80%;
+    text-align: center;
+}
+
+.file-item:hover {
+    background-color: #ccc;
+}
+
+#error-message p {
+    color: red;
+}
+
+/* Botón para salir */
+#logout-btn {
+    background-color: #f44336; /* Rojo */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+    justify-content: center;
+}
+
+#logout-btn:hover {
+    background-color: #d32f2f;
+}
+
+.file-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.file-item {
+    flex: 1;
+    color: #007BFF;
+    text-decoration: none;
+}
+
+.file-item:hover {
+    text-decoration: underline;
+}
+
+.delete-btn {
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.delete-btn:hover {
+    background-color: darkred;
+}
+
+.actions-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+/* Estilos generales del formulario */
+.file-upload-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 25px; /* Espacio entre elementos */
+    margin-top: 20px;
+}
+
+#upload-form {
+    margin-bottom: 40px; /* Más espacio debajo del formulario */
+}
+
+#back-button {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#back-button:hover {
+    background-color: darkred;
+}
+
+

@@ -1,0 +1,128 @@
+@font-face {
+    font-family: 'Roboto';
+    src: url('../../../backend/src/carnet/static/fonts/Roboto-Regular.ttf') format('truetype');
+    font-weight: normal; /* Define el peso de la fuente como normal */
+}
+
+
+body {
+    background-image: url('../img/fondo3.jpg'); /* Ruta correcta hacia la imagen */
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    background-color: brown;
+    margin: 0; /* Asegura que no haya margen extra en el body */
+    padding: 0; /* Asegura que no haya padding extra en el body */
+    overflow-x: hidden; /* Evita el scroll horizontal innecesario */
+}
+
+body {
+    font-family: 'Roboto', sans-serif; /* Aplica la fuente a todo el cuerpo */
+    margin: 0; /* Elimina márgenes predeterminados */
+    padding: 20px; /* Agrega espacio alrededor */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centra todo el contenido */
+}
+
+.h2{
+    color: #022861;
+    text-align: center;
+    font-size: 1.3rem; /* Reduce el tamaño de la fuente */
+    margin-bottom: 10px; /* Espacio debajo del título */
+    font-family: 'Roboto', sans-serif; /* Aplica la fuente a todo el cuerpo */
+}
+
+.h3{
+    color: rgba(0, 0, 0, 0.87);
+    text-align: center;
+    font-size: 1rem; /* Reduce el tamaño de la fuente */
+    font-family: 'Roboto', sans-serif; /* Aplica la fuente a todo el cuerpo */
+    font-weight: 400; /* Usa la variante regular de Roboto */
+}
+
+.h5{
+    color: rgba(0, 0, 0, 0.87);
+    text-align: center;
+
+    margin-bottom: 10px; /* Espacio debajo del título */
+    font-family: 'Roboto', sans-serif; /* Aplica la fuente a todo el cuerpo */
+
+}
+
+.title {
+    color: #022861;
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 10px; /* Espacio debajo del título */
+    font-family: 'Roboto', sans-serif; /* Aplica la fuente a todo el cuerpo */
+}
+
+#login-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+    margin-top: 40px;
+    font-family: 'Roboto', sans-serif;
+    background-color: white;
+    /* Ajustes nuevos */
+    padding: 30px; /* Añade algo de relleno dentro del formulario */
+    border: 2px solid #022861; /* Bordes visibles */
+    border-radius: 30px; /* Bordes redondeados */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave para darle profundidad */
+}
+
+#cedula-rh-form {
+    display: flex; /* Utiliza Flexbox */
+    flex-direction: column; /* Coloca elementos en columna */
+    align-items: center; /* Centra elementos horizontalmente */
+    width: 100%; /* Asegura que ocupe todo el ancho disponible */
+    max-width: 400px; /* Establece un ancho máximo */
+    margin-top: 40px; /* Espacio encima del formulario */
+    font-family: 'Roboto', sans-serif; /* Aplica la fuente a todo el cuerpo */
+}
+
+.input2{
+    font-size: 1.2rem; /* Tamaño de fuente más grande */
+    padding: 10px;
+    margin-bottom: 10px; /* Espacio debajo del campo de entrada */
+    width: 50%; /* Ajusta el ancho del campo de entrada */
+    max-width: 200px; /* Ajusta el ancho máximo del campo de entrada */
+    text-align: center; /* Centra el texto dentro del campo */
+} 
+
+.input{
+    font-size: 1.2rem; /* Tamaño de fuente más grande */
+    padding: 5px;
+    margin-bottom: 10px; /* Espacio debajo del campo de entrada */
+    width: 100%; /* Ajusta el ancho del campo de entrada */
+    max-width: 250px; /* Ajusta el ancho máximo del campo de entrada */
+    text-align: center; /* Centra el texto dentro del campo */
+}
+
+button {
+    font-size: 1.2rem; /* Tamaño de fuente más grande */
+    padding: 10px 20px; /* Aumenta el padding para hacerlo más largo */
+    cursor: pointer;
+    display: inline-block; /* Cambia a inline-block para que se ajuste al contenido */
+    margin-top: 10px; /* Espacio encima del botón */
+    text-align: center; /* Centra el texto dentro del botón */
+    background-color: rgb(0, 32, 92); /* Color de fondo */
+    color: white; /* Texto blanco */
+    border: none; /* Sin borde para un aspecto más limpio */
+    border-radius: 4px; /* Bordes redondeados */
+    width: 70%; /* Hace que el botón ocupe todo el ancho disponible */
+}
+
+button:hover {
+    background-color: rgb(121, 181, 201); /* Fondo azul claro al pasar el ratón */
+    color: white; /* Texto azul oscuro para contrastar */
+}
+
+
+
+
+

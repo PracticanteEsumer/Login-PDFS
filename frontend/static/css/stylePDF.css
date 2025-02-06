@@ -1,0 +1,227 @@
+/* Cargar la fuente Poppins */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+/* Contenedor principal */
+.container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Poppins', sans-serif; /* Aplicamos Poppins como fuente principal */
+}
+
+/* Logo */
+.logo-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.top-image {
+    width: 100%; /* Asegura que la imagen ocupe todo el ancho disponible */
+    height: auto;
+    max-width: 300px; /* Ajusta el tamaño máximo de la imagen */
+}
+
+/* Tabla de archivos */
+.files-table {
+    width: 70%; /* Reducimos el ancho de la tabla */
+    margin: 0 auto; /* Centrar la tabla */
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #f9f9f9;
+}
+
+.files-table th, .files-table td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ffffff;
+}
+
+.files-table th {
+    background-color: #202b52;
+    color: white;
+}
+
+.files-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Estilo de los enlaces */
+.file-name {
+    color: #243446;
+    text-decoration: none;
+}
+
+.file-name:hover {
+    text-decoration: underline;
+}
+
+/* Centrando los botones dentro de la celda de la tabla */
+.files-table td {
+    text-align: center; /* Centra los botones en las celdas */
+}
+
+/* Estilo general para botones */
+button, .btn {
+    background-color: #202b52;
+    color: white;
+    border: none;
+    padding: 10px;
+    margin: 5px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+button:hover, .btn:hover {
+    background-color: #323e6b;
+}
+
+/* Estilo para los íconos dentro de los botones */
+.bi {
+    margin-right: 0;
+    font-size: 1.2em;
+}
+
+/* Botón de descarga solo con ícono */
+.download-btn {
+    background-color: #202b52;
+    color: #f2f2f2;
+    padding: 0;
+    font-size: 1.5em;
+    width: 40px;
+    height: 40px;
+}
+
+/* Botón de eliminación */
+.delete-btn {
+    background-color: #ff0000;
+    color: white;
+    padding: 0;
+    font-size: 1.5em;
+    width: 40px;
+    height: 40px;
+}
+
+/* Estilo para el contenedor de subida de archivos */
+.file-upload-container {
+    width: 70%;
+    margin: 30px auto;
+    text-align: center;
+    background-color: #f9f9f9;
+    padding: 5px 10px; /* Padding más pequeño: 5px arriba y abajo, 10px a los lados */
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.file-upload-container label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 16px;
+    color: #333;
+}
+
+.file-upload-container input[type="file"] {
+    padding: 8px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 100%;
+    max-width: 300px;
+    display: inline-block;
+}
+
+/* Estilo específico para el botón dentro de .file-upload-container */
+.file-upload-container button {
+    padding: 8px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #1f2c30;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    width: auto;
+    height: auto;
+    transition: background-color 0.3s ease;
+}
+
+.file-upload-container button:hover {
+    background-color: #102f3b;
+}
+
+/* Estilo para el semi-título "Agregar PDF" */
+.upload-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Botón de logout */
+#logout-btn {
+    background-color: #ff0000;
+    color: white;
+    padding: 10px 30px;
+    font-size: 16px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    display: block;
+    margin: 10px 210px 10px auto; /* Ajuste del margen derecho para moverlo hacia la izquierda */
+    text-align: center;
+    width: auto;
+}
+
+#logout-btn:hover {
+    background-color: #202b52;
+}
+
+/* Diseño responsive para pantallas más pequeñas */
+@media (max-width: 600px) {
+    .file-upload-container {
+        width: 90%;
+    }
+
+    .file-upload-container input[type="file"] {
+        width: 100%;
+    }
+
+    .file-upload-container button {
+        width: 100%;
+    }
+}
+
+
+/* Contenedor de la paginación */
+.paginator-container {
+    display: flex; /* Usamos flexbox para alinear los elementos */
+    justify-content: center; /* Centra los elementos horizontalmente */
+    align-items: center; /* Centra los elementos verticalmente */
+    margin-top: 20px; /* Espaciado superior */
+}
+
+/* Estilo para los botones de paginación */
+.page-btn {
+    background-color: #202b52; /* Color de fondo de los botones */
+    color: white; /* Color del texto */
+    padding: 8px 12px; /* Tamaño del botón */
+    border: none;
+    border-radius: 5px; /* Bordes redondeados */
+    font-size: 14px;
+    cursor: pointer;
+    margin: 0 10px; /* Espaciado entre los botones */
+}
+
+.page-btn:hover {
+    background-color: #323e6b; /* Color de fondo cuando se pasa el ratón */
+}
+
+/* Estilo para el span de la información de la página */
+#page-info {
+    font-size: 16px;
+    margin: 0 10px; /* Espaciado entre la información y los botones */
+}
+
+

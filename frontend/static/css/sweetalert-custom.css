@@ -1,0 +1,60 @@
+/* Estilos personalizados para SweetAlert2 */
+
+/* Fondo de la ventana modal */
+.swal2-popup {
+    border-radius: 12px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    background-color: #ffffff;
+}
+
+/* Estilos del título */
+.swal2-title {
+    font-size: 22px;
+    color: #333;
+    font-weight: bold;
+}
+
+/* Estilos del texto */
+.swal2-content {
+    font-size: 16px;
+    color: #555;
+}
+
+/* Botón de confirmar (rojo para eliminación) */
+.swal2-confirm {
+    background-color: #d33 !important;
+    color: white !important;
+    border-radius: 6px !important;
+    padding: 10px 20px !important;
+    font-size: 16px !important;
+}
+
+/* Botón de cancelar (azul) */
+.swal2-cancel {
+    background-color: #202B52 !important;
+    color: white !important;
+    border-radius: 6px !important;
+    padding: 10px 20px !important;
+    font-size: 16px !important;
+}
+
+/* Íconos personalizados */
+.swal2-icon.swal2-warning {
+    color: #f39c12;
+    border-color: #f39c12;
+}
+
+.swal2-icon.swal2-success {
+    color: #28a745;
+    border-color: #28a745;
+}
+
+.swal2-icon.swal2-error {
+    color: #d9534f;
+    border-color: #d9534f;
+}
+
+/* Tamaño del loader */
+.swal2-loader {
+    border-color: #d33 transparent transparent transparent !important;
+}

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="static/css/style.css">
+    <title>Inicio de Sesión</title>
+</head>
+<body>
+    <form id="login-form" method="POST" action="/login"> </form>
+    <div class="container">
+        <div class="logo-container">
+            <img src="/static/img/ESUMERLOGO.png" alt="imagen superior" class="top-image">
+        </div>
+        
+        <!-- Formulario de inicio de sesión -->
+        <form class="login-form" id="login-form" method="POST" action="/login" autocomplete="off">
+            <label class="welcome-message">INICIA DE SESIÓN</label>
+            <div class="input-container">
+                <input class="input" type="text" id="strUsuario" name="strUsuario" placeholder="USUARIO" required autocomplete="off">
+            </div>
+            <div class="input-container">
+                <input class="input" type="password" id="strContrasenna" name="strContrasenna" placeholder="CONTRASEÑA" required autocomplete="off">
+            </div>
+            <button type="submit" class="submit-btn">INICIO</button>
+        </form>
+
+
+        <!-- Mensaje de error -->
+        <div id="error-message" style="display:none;">
+            <p>Usuario o contraseña incorrectos.</p>
+        </div>
+    </div>
+</body>
+</html>

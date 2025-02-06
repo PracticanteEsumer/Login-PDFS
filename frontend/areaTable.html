@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lista de Usuarios</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* Estilos generales */
+      @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap");
+
+      body {
+        font-family: "Poppins", sans-serif;
+        font-size: 16px;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      /* Barra de navegación */
+      .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 155px;
+        height: 100%;
+        background-color: #202b52;
+        color: white;
+        padding: 12px;
+        border-radius: 0 5px 5px 0;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        overflow-y: auto;
+      }
+
+      .navbar ul {
+        list-style-type: none;
+        padding: 0;
+      }
+
+      .navbar li {
+        margin: 20px 0;
+      }
+
+      .navbar a {
+        color: rgb(255, 255, 255);
+        text-decoration: none;
+        font-weight: 600;
+        text-transform: uppercase;
+        display: block;
+      }
+
+      .navbar a:hover {
+        color: rgb(228, 213, 213);
+      }
+
+      #logout-btn {
+        background-color: #ff0000;
+        color: white;
+        padding: 10px 30px;
+        font-size: 16px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        display: block;
+        margin: 30px 0;
+        text-align: center;
+      }
+
+      /* Contenedor principal */
+      .main-content {
+        margin-left: 180px;
+        padding: 0px;
+        width: 100%;
+        overflow-y: auto;
+      }
+
+      h1 {
+        margin-top: 30px;
+        color: #202b52;
+        font-size: 34px;
+        text-align: center;
+      }
+
+      .search-bar {
+        display: flex;
+        justify-content: center; /* Centra el contenido horizontalmente */
+        align-items: center; /* Alinea verticalmente */
+        gap: 10px; /* Espacio entre los elementos */
+        margin-bottom: 20px; /* Espacio debajo de la barra */
+      }
+
+      .search-input {
+        padding: 8px;
+        width: 300px; /* Ajusta el tamaño del input */
+        font-size: 16px;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        text-align: center; /* Centra el texto dentro del input */
+      }
+
+      .search-btn {
+        padding: 8px 15px;
+        background-color: #202b52;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .create-btn {
+        padding: 8px 15px;
+        background-color: transparent; /* Fondo transparente */
+        color: black; /* Texto en negro */
+        border: 2px solid 202b52; /* Borde azul */
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .create-btn:hover {
+        background-color: rgba(
+          169,
+          169,
+          236,
+          0.1
+        ); /* Azul muy claro al pasar el mouse */
+      }
+
+      /* Tabla */
+      table#areas-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      table#areas-table th,
+      table#areas-table td {
+        padding: 12px;
+        border: 1px solid #ddd;
+        text-align: left;
+        word-wrap: break-word;
+      }
+
+      table#areas-table th {
+        background-color: #202b52;
+        color: white;
+      }
+
+      /* Paginación */
+      .paginator-container {
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      .page-btn {
+        padding: 8px 15px;
+        margin: 0 10px;
+        background-color: #202b52;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+      }
+
+      .page-btn:disabled {
+        background-color: #dcdcdc;
+        cursor: not-allowed;
+      }
+      /* Celda que contiene los botones de acción */
+      .action-cell {
+        display: flex;
+        justify-content: space-evenly; /* Espaciado uniforme entre los botones */
+        align-items: center;
+        gap: 10px; /* Espacio entre los botones */
+      }
+
+      .action-btn {
+        display: flex;
+        align-items: center;
+        padding: 5px 15px;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin-right: -15px; /* Ajusta este valor según lo que necesites */
+      }
+
+      .action-btn i {
+        margin-right: 8px; /* Espacio entre el icono y el texto */
+      }
+
+      .edit-btn {
+        background-color: #202b52; /* Verde elegante */
+        color: white;
+      }
+
+      .edit-btn:hover {
+        background-color: #202b45; /* Verde más oscuro */
+      }
+
+      .delete-btn {
+        background-color: #f44336; /* Rojo elegante */
+        color: white;
+      }
+
+      .delete-btn:hover {
+        background-color: #e53935; /* Rojo más oscuro */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="navbar">
+      <ul>
+        <li>
+          <a href="/admin"><i class="fas fa-file-pdf"></i> Archivos PDFS</a>
+        </li>
+        <li>
+          <a href="/areas"><i class="fas fa-shield-alt"></i> Areas</a>
+        </li>
+        <li>
+          <a href="/users"><i class="fas fa-user"></i>Usuarios</a>
+        </li>
+        <li>
+          <a href="/permissions"><i class="fas fa-cogs"></i>Permisos</a>
+        </li>
+      </ul>
+      <button class="regresar-btn" id="logout-btn">
+        <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+      </button>
+    </div>
+
+    <div class="main-content">
+      <h1>Lista de Areas</h1>
+
+      <div class="search-bar">
+        <input
+          type="text"
+          id="search-input"
+          class="search-input"
+          placeholder="Buscar area..."
+        />
+        <button class="search-btn" id="search-btn">Buscar</button>
+        <button class="create-btn" id="create-btn">Crear Area</button>
+      </div>
+
+      <!-- Tabla de usuarios -->
+      <table id="areas-table">
+        <thead>
+          <tr>
+            <th>Nombre de area</th>
+            <th>Descripción</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- rows-placeholder -->
+        </tbody>
+      </table>
+
+      <!-- Paginación -->
+      <div class="paginator-container">
+        <button id="prev-page" class="page-btn">Anterior</button>
+        <span id="page-info"></span>
+        <button id="next-page" class="page-btn">Siguiente</button>
+      </div>
+    </div>
+
+    <script>
+      let currentPage = 1;
+      let totalPages = 1;
+      const areasPerPage = 6;
+
+      document.addEventListener("DOMContentLoaded", () => {
+        renderAreas(currentPage);
+        document
+          .getElementById("search-input")
+          .addEventListener("input", searchAreas);
+        document
+          .getElementById("prev-page")
+          .addEventListener("click", () => changePage(-1));
+        document
+          .getElementById("next-page")
+          .addEventListener("click", () => changePage(1));
+      });
+
+      async function fetchAreas(page = 1) {
+        try {
+          const response = await fetch(
+            `http://localhost:8000/areas_paginated?page=${page}&per_page=${areasPerPage}`
+          );
+          if (!response.ok) throw new Error("Error al obtener los datos.");
+          const data = await response.json();
+          totalPages = data.total_pages;
+          return data.areas;
+        } catch (error) {
+          console.error("Error al obtener los datos:", error);
+          document.querySelector("#areas-table tbody").innerHTML = `
+      <tr><td colspan="5" style="text-align:center; color:red;">Error cargando areas</td></tr>`;
+          return [];
+        }
+      }
+
+      async function renderAreas(page) {
+        const areas = await fetchAreas(page);
+        const tbody = document.querySelector("#areas-table tbody");
+        tbody.innerHTML = "";
+
+        areas.forEach((area) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${area.nameArea}</td>
+            <td>${area.description}</td>
+            <td class="action-cell">
+    <button class="action-btn edit-btn" onclick="editArea(${area.id})"> 
+        <i class="fas fa-edit"></i> 
+    </button>
+    <button class="action-btn delete-btn" onclick="deleteArea(${area.id})">
+    <i class="fas fa-trash-alt"></i> 
+</button>
+
+</td>
+
+
+
+        `;
+
+          tbody.appendChild(row);
+        });
+
+        // Actualizar la información de la página
+        document.getElementById(
+          "page-info"
+        ).textContent = `Página ${currentPage} de ${totalPages}`;
+
+        // Deshabilitar botones de página según sea necesario
+        document.getElementById("prev-page").disabled = currentPage === 1;
+        document.getElementById("next-page").disabled =
+          currentPage === totalPages;
+      }
+
+      function changePage(direction) {
+        if (
+          (direction === -1 && currentPage > 1) ||
+          (direction === 1 && currentPage < totalPages)
+        ) {
+          currentPage += direction;
+          document.getElementById("search-input").value = "";
+          renderAreas(currentPage);
+        }
+      }
+
+      async function searchAreas() {
+        const query = document
+          .getElementById("search-input")
+          .value.toLowerCase();
+
+        if (query.trim() === "") {
+          return renderAreas(currentPage); // Si el input está vacío, muestra la paginación normal
+        }
+
+        try {
+          const response = await fetch(
+            `http://localhost:8000/areas_search?query=${encodeURIComponent(
+              query
+            )}`
+          );
+          if (!response.ok) throw new Error("Error al buscar areas.");
+          const data = await response.json();
+
+          const tbody = document.querySelector("#areas-table tbody");
+          tbody.innerHTML = "";
+
+          data.areas.forEach((area) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+        <td>${area.nameArea}</td>
+        <td>${area.description}</td>
+        <td class="action-cell">
+          <button class="action-btn edit-btn" onclick="editArea(${area.id})"> 
+              <i class="fas fa-edit"></i> 
+          </button>
+          <button class="action-btn delete-btn" onclick="deleteArea(${area.id})">
+              <i class="fas fa-trash-alt"></i> 
+          </button>
+        </td>
+      `;
+            tbody.appendChild(row);
+          });
+
+          // Mostrar que son resultados de búsqueda
+          document.getElementById(
+            "page-info"
+          ).textContent = `Resultados de búsqueda`;
+          document.getElementById("prev-page").disabled = true;
+          document.getElementById("next-page").disabled = true;
+        } catch (error) {
+          console.error("Error al buscar areas:", error);
+        }
+      }
+
+      function editArea(areaId) {
+        console.log("Editar area con ID:", areaId);
+        // Lógica para editar area
+      }
+
+      function deleteArea(areaId) {
+        if (confirm("¿Seguro que quieres eliminar este area?")) {
+          console.log("Eliminar area con ID:", areaId);
+          // Lógica para eliminar area
+        }
+      }
+      // Inicializar la tabla de area
+      renderAreas(currentPage);
+    </script>
+  </body>
+</html>
