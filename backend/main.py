@@ -122,6 +122,34 @@ async def list_users():
     # Retornar los usuarios en formato JSON
     return JSONResponse(content={"users": users})
 
+@app.get("/userById/{user_id}")
+async def get_us(user_id: int):
+    # Crear la conexión a la base de datos
+    connection = get_db()
+    cursor = connection.cursor(dictionary=True)
+
+    # Consulta SQL para obtener un usuario por su ID
+    query = """
+        SELECT id, str_name_user AS username, str_email AS email, id_permission, id_area
+        FROM tbl_users
+        WHERE id = %s
+    """
+    cursor.execute(query, (user_id,))
+    user = cursor.fetchone()
+
+    # Cerrar la conexión a la base de datos
+    cursor.close()
+    connection.close()
+
+    if user is None:
+        # Si no se encuentra el usuario, devolver un error 404
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    # Retornar los detalles del usuario en formato JSON
+    return JSONResponse(content=user)
+
+
+
 
 
 
@@ -229,19 +257,7 @@ async def create_user(user: UserCreate):
         # Si ocurre un error inesperado, devolver un error 500
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
     
-def get_user_by_id(user_id: int, db: Session):
-    try:
-        query = "SELECT * FROM users WHERE id = %s"
-        db.execute(query, (user_id,))
-        user = db.fetchone()
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        return user
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
-    
-
-# Modelo Pydantic para la actualización de datos del usuario
+# Modelo Pydantic para la actualización de usuario
 class UserUpdate(BaseModel):
     str_name_user: str
     str_email: str
@@ -249,11 +265,54 @@ class UserUpdate(BaseModel):
     id_permission: int
     id_area: int
 
-# Función para actualizar los datos del usuario
+# Función para obtener usuario por ID antes de actualizar
+def get_user_by_id(user_id: int, db: Session):
+    try:
+        query = "SELECT * FROM tbl_users WHERE id = %s"
+        result = db.execute(query, (user_id,))
+        user = result.fetchone()
+        if not user:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        return user
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al obtener usuario: {str(e)}")
+    
+
+
+
+
+# Función para obtener información de permisos y áreas
+def get_permission_and_area(permission_id: int, area_id: int, db: Session):
+    try:
+        # Verifica si el permiso existe
+        permission_query = "SELECT * FROM tbl_permissions WHERE id = %s"
+        permission_result = db.execute(permission_query, (permission_id,))
+        permission = permission_result.fetchone()
+
+        # Verifica si el área existe
+        area_query = "SELECT * FROM tbl_areas WHERE id = %s"
+        area_result = db.execute(area_query, (area_id,))
+        area = area_result.fetchone()
+
+        if not permission:
+            raise HTTPException(status_code=404, detail="Permiso no encontrado")
+        if not area:
+            raise HTTPException(status_code=404, detail="Área no encontrada")
+
+        return {"permission": permission, "area": area}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al obtener datos: {str(e)}")
+
+# Función para actualizar usuario con validación de área y permiso
 def update_user(id: int, name: str, email: str, password: str, id_permission: int, id_area: int, db: Session):
     try:
-        # Si la contraseña no está vacía, puedes agregar lógica para encriptarla
-        # Puedes usar librerías como bcrypt para la encriptación aquí
+        # Obtener usuario actual
+        user = get_user_by_id(id, db)
+
+        # Validar existencia de área y permiso
+        get_permission_and_area(id_permission, id_area, db)
+
+        # Si la contraseña no está vacía, puedes encriptarla aquí con bcrypt
         query = """
             UPDATE tbl_users
             SET str_name_user = %s, str_email = %s, str_password = %s, id_permission = %s, id_area = %s
@@ -263,18 +322,19 @@ def update_user(id: int, name: str, email: str, password: str, id_permission: in
         db.commit()
         
         return {"success": True, "message": "Usuario actualizado exitosamente"}
-    except Exception as e:  
+    except HTTPException as http_exc:
         db.rollback()
-        return {"success": False, "message": f"Error: {str(e)}"}    
+        raise http_exc
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error en la actualización: {str(e)}")
 
+# Endpoint para actualizar usuario
 @app.put("/users/{id}")
 async def update_user_endpoint(id: int, user_data: UserUpdate, db: Session = Depends(get_db)):
     result = update_user(id, user_data.str_name_user, user_data.str_email, user_data.str_password, user_data.id_permission, user_data.id_area, db)
     
-    if result["success"]:
-        return {"message": result["message"]}
-    else:
-        raise HTTPException(status_code=400, detail=result["message"])  
+    return {"message": result["message"]}
 
 
 
@@ -315,6 +375,32 @@ async def list_areas():
     html_content = html_content.replace("<!-- rows-placeholder -->", table_rows)
 
     return HTMLResponse(content=html_content)
+
+
+@app.get("/area")
+async def get_areas():
+    # Crear la conexión a la base de datos
+    connection = get_db()
+    cursor = connection.cursor(dictionary=True)
+
+    # Consulta SQL para obtener todas las áreas
+    query = """
+        SELECT id, str_name_area, str_description
+        FROM tbl_areas
+    """
+    cursor.execute(query)
+    areas = cursor.fetchall()
+
+    # Cerrar la conexión a la base de datos
+    cursor.close()
+    connection.close()
+
+    if areas:
+        return JSONResponse(content={"areas": areas})
+    else:
+        return JSONResponse(status_code=404, content={"message": "No se encontraron áreas"})
+
+
 
 
 @app.get("/areas_paginated", response_class=JSONResponse)
@@ -410,6 +496,30 @@ async def list_permissions():
     html_content = html_content.replace("<!-- rows-placeholder -->", table_rows)
 
     return HTMLResponse(content=html_content)
+
+@app.get("/permission")
+async def get_permissions():
+    # Crear la conexión a la base de datos
+    connection = get_db()
+    cursor = connection.cursor(dictionary=True)
+
+    # Consulta SQL para obtener todos los permisos
+    query = """
+        SELECT id, str_name_permission
+        FROM tbl_permissions
+    """
+    cursor.execute(query)
+    permissions = cursor.fetchall()
+
+    # Cerrar la conexión a la base de datos
+    cursor.close()
+    connection.close()
+
+    if permissions:
+        return JSONResponse(content={"permissions": permissions})
+    else:
+        return JSONResponse(status_code=404, content={"message": "No se encontraron permisos"})
+
 
 
 @app.get("/permissions_paginated", response_class=JSONResponse)
