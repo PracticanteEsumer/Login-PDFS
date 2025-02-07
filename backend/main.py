@@ -109,7 +109,7 @@ async def list_users():
 
     # Consulta SQL para obtener los usuarios
     query = """
-        SELECT id, str_name_user AS username, str_email AS email, id_permission, id_area
+        SELECT id, str_name_user AS username, str_email AS email,str_password AS password, id_permission, id_area
         FROM tbl_users
     """
     cursor.execute(query)
@@ -130,7 +130,7 @@ async def get_us(user_id: int):
 
     # Consulta SQL para obtener un usuario por su ID
     query = """
-        SELECT id, str_name_user AS username, str_email AS email, id_permission, id_area
+        SELECT id, str_name_user AS username, str_email AS email,str_password AS password, id_permission, id_area
         FROM tbl_users
         WHERE id = %s
     """
@@ -256,14 +256,10 @@ async def create_user(user: UserCreate):
     except Exception as e:
         # Si ocurre un error inesperado, devolver un error 500
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
-    
-# Modelo Pydantic para la actualización de usuario
-class UserUpdate(BaseModel):
-    str_name_user: str
-    str_email: str
-    str_password: str
-    id_permission: int
-    id_area: int
+
+
+
+
 
 # Función para obtener usuario por ID antes de actualizar
 def get_user_by_id(user_id: int, db: Session):
@@ -277,7 +273,92 @@ def get_user_by_id(user_id: int, db: Session):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al obtener usuario: {str(e)}")
     
+# Modelo Pydantic para la actualización de usuario
+class UserUpdate(BaseModel):
+    str_name_user: str
+    str_email: str
+    str_password: str
+    id_permission: int
+    id_area: int
 
+    class Config:
+        extra = "ignore"
+
+async def get_user_update(
+    str_name_user: str = Form(...),
+    str_email: str = Form(...),
+    str_password: str = Form(...),
+    id_permission: int = Form(...),
+    id_area: int = Form(...)
+) -> UserUpdate:
+    return UserUpdate(
+        str_name_user=str_name_user,
+        str_email=str_email,
+        str_password=str_password,
+        id_permission=id_permission,
+        id_area=id_area
+    )
+
+# Función para actualizar usuario con validación de área y permiso
+def update_user(id: int, name: str, email: str, password: str, id_permission: int, id_area: int, db: Session):
+    try:
+        # Obtener usuario actual
+        user = get_user_by_id(id, db)
+
+        # Validar existencia de área y permiso
+        get_permission_and_area(id_permission, id_area, db)
+
+        query = """
+            UPDATE tbl_users
+            SET str_name_user = %s, str_email = %s, str_password = %s, id_permission = %s, id_area = %s
+            WHERE id = %s
+        """
+        db.execute(query, (name, email, password, id_permission, id_area, id))
+        db.commit()
+        
+        return {"success": True, "message": "Usuario actualizado exitosamente"}
+    except HTTPException as http_exc:
+        db.rollback()
+        raise http_exc
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error en la actualización: {str(e)}")
+    
+@app.put("/usersUpdate/{id}")
+async def update_user_endpoint(
+    id: int,
+    user_data: UserUpdate = Depends(get_user_update)
+):
+    try:
+        connection = get_db()
+        cursor = connection.cursor(dictionary=True)  # dictionary=True para que los resultados sean dicts si los necesitas
+
+        query = """
+            UPDATE tbl_users 
+            SET str_name_user = %s, 
+                str_email = %s, 
+                str_password = %s, 
+                id_permission = %s, 
+                id_area = %s
+            WHERE id = %s
+        """
+        values = (
+            user_data.str_name_user,
+            user_data.str_email,
+            user_data.str_password,
+            user_data.id_permission,
+            user_data.id_area,
+            id
+        )
+
+        cursor.execute(query, values)
+        connection.commit()
+        cursor.close()
+        connection.close()
+
+        return {"message": "Usuario actualizado correctamente."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error en la actualización: {str(e)}")
 
 
 
@@ -303,38 +384,7 @@ def get_permission_and_area(permission_id: int, area_id: int, db: Session):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al obtener datos: {str(e)}")
 
-# Función para actualizar usuario con validación de área y permiso
-def update_user(id: int, name: str, email: str, password: str, id_permission: int, id_area: int, db: Session):
-    try:
-        # Obtener usuario actual
-        user = get_user_by_id(id, db)
 
-        # Validar existencia de área y permiso
-        get_permission_and_area(id_permission, id_area, db)
-
-        # Si la contraseña no está vacía, puedes encriptarla aquí con bcrypt
-        query = """
-            UPDATE tbl_users
-            SET str_name_user = %s, str_email = %s, str_password = %s, id_permission = %s, id_area = %s
-            WHERE id = %s
-        """
-        db.execute(query, (name, email, password, id_permission, id_area, id))
-        db.commit()
-        
-        return {"success": True, "message": "Usuario actualizado exitosamente"}
-    except HTTPException as http_exc:
-        db.rollback()
-        raise http_exc
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error en la actualización: {str(e)}")
-
-# Endpoint para actualizar usuario
-@app.put("/users/{id}")
-async def update_user_endpoint(id: int, user_data: UserUpdate, db: Session = Depends(get_db)):
-    result = update_user(id, user_data.str_name_user, user_data.str_email, user_data.str_password, user_data.id_permission, user_data.id_area, db)
-    
-    return {"message": result["message"]}
 
 
 

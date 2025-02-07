@@ -517,32 +517,45 @@
 
           <div class="modal-body">
             <form id="edit-user-form">
-              <input type="hidden" id="edit-user-id" />
-              <!-- Campo oculto para el ID del usuario -->
-
+              <input type="hidden" id="edit-user-id" name="user_id" />
               <div class="mb-3">
-                <label class="form-label">Nombre de Usuario</label>
+                <label>Nombre de Usuario</label>
                 <input
                   type="text"
                   class="form-control"
                   id="edit-username"
+                  name="str_name_user"
                   required
                 />
               </div>
-
               <div class="mb-3">
-                <label class="form-label">Email</label>
+                <label>Email</label>
                 <input
                   type="email"
                   class="form-control"
                   id="edit-email"
+                  name="str_email"
                   required
                 />
               </div>
-
               <div class="mb-3">
-                <label class="form-label">Permiso</label>
-                <select class="form-control" id="edit-permission" required>
+                <label>Contraseña</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="edit-password"
+                  name="str_password"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label>Permiso</label>
+                <select
+                  class="form-control"
+                  id="edit-permission"
+                  name="id_permission"
+                  required
+                >
                   <option value="" disabled selected>
                     Selecciona un permiso
                   </option>
@@ -551,20 +564,21 @@
                   <option value="3">Permiso para visualizar PDFS</option>
                 </select>
               </div>
-
               <div class="mb-3">
-                <label class="form-label">Área</label>
-                <select class="form-control" id="edit-area" required>
+                <label>Área</label>
+                <select
+                  class="form-control"
+                  id="edit-area"
+                  name="id_area"
+                  required
+                >
                   <option value="" disabled selected>Selecciona un área</option>
                   <option value="1">Bienestar</option>
                   <option value="2">Gestion TIC</option>
                   <option value="3">Comunicaciones y marca</option>
                 </select>
               </div>
-
-              <button type="submit" class="btn btn-success w-100">
-                Actualizar
-              </button>
+              <button type="submit" class="btn btn-success">Actualizar</button>
             </form>
           </div>
         </div>
@@ -829,47 +843,119 @@
       function editUser(userId) {
         console.log("Editando usuario con ID:", userId);
 
-        // Solicitar los datos del usuario desde el backend
+        // Primero, se consulta el backend para obtener los datos actuales del usuario
         fetch(`http://localhost:8000/userById/${userId}`)
-          .then((response) => response.json())
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Error en la respuesta del servidor");
+            }
+            return response.json();
+          })
           .then((user) => {
             console.log("Usuario recibido:", user);
 
-            // Cargar los datos del usuario en los campos del formulario
+            // Obtener referencias a los inputs del formulario (asegúrate de que cada input tenga el atributo "name")
             const usernameInput = document.getElementById("edit-username");
+            const passwordInput = document.getElementById("edit-password");
             const emailInput = document.getElementById("edit-email");
             const permissionInput = document.getElementById("edit-permission");
             const areaInput = document.getElementById("edit-area");
+            const userIdInput = document.getElementById("edit-user-id");
 
-            // Verificar que los elementos existen
-            if (usernameInput && emailInput && permissionInput && areaInput) {
-              usernameInput.value = user.username || ""; // Asignar nombre de usuario
-              emailInput.value = user.email || ""; // Asignar correo
-              permissionInput.value = user.id_permission || ""; // Asignar permiso
-              areaInput.value = user.id_area || ""; // Asignar área
-            } else {
+            if (
+              !usernameInput ||
+              !passwordInput ||
+              !emailInput ||
+              !permissionInput ||
+              !areaInput ||
+              !userIdInput
+            ) {
               console.error("No se encontraron los inputs correctamente.");
+              return;
             }
 
-            // Cargar los permisos y áreas
+            // Llenar los campos con la información del usuario
+            userIdInput.value = userId; // Guarda el ID en un campo oculto (con name="user_id")
+            usernameInput.value = user.username || "";
+            passwordInput.value = user.password || "";
+            emailInput.value = user.email || "";
+            permissionInput.value = user.id_permission || "";
+            areaInput.value = user.id_area || "";
+
+            // Cargar dinámicamente los selectores de permisos y áreas
             loadPermissionsAndAreas(user.id_permission, user.id_area);
 
-            // Mostrar el modal
+            // Mostrar el modal de edición usando Bootstrap
             const editUserModal = new bootstrap.Modal(
               document.getElementById("editUserModal")
             );
             editUserModal.show();
+
+            // Referencia al formulario
+            const editUserForm = document.getElementById("edit-user-form");
+
+            // Configurar el evento onsubmit del formulario
+            editUserForm.onsubmit = (event) => {
+              event.preventDefault(); // Prevenir recarga de la página
+
+              // Crear un objeto FormData a partir del formulario.
+              // Esto recogerá todos los campos cuyos atributos "name" estén definidos.
+              const formData = new FormData(editUserForm);
+
+              console.log("Enviando actualización de usuario con FormData:");
+              // Imprimir en consola cada par clave/valor para depurar
+              for (let pair of formData.entries()) {
+                console.log(pair[0] + ": " + pair[1]);
+              }
+
+              // Enviar la actualización al backend.
+              fetch(`http://localhost:8000/usersUpdate/${userId}`, {
+                method: "PUT",
+                body: formData, // Se envía como multipart/form-data
+              })
+                .then((response) => {
+                  if (!response.ok)
+                    throw new Error("Error al actualizar el usuario");
+                  return response.json();
+                })
+                .then((data) => {
+                  console.log("Respuesta del servidor:", data);
+                  // Usamos SweetAlert para mostrar la alerta de éxito
+                  Swal.fire({
+                    title: "¡Éxito!",
+                    text: data.message || "Usuario actualizado exitosamente",
+                    icon: "success",
+                    timer: 2000,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                  }).then(() => {
+                    // Una vez que la alerta se cierra, ocultamos el modal y recargamos la página.
+                    editUserModal.hide();
+                    location.reload();
+                  });
+                })
+                .catch((error) => {
+                  console.error("Error al actualizar usuario:", error);
+                  // Mostrar error con SweetAlert también, si se desea
+                  Swal.fire({
+                    title: "¡Error!",
+                    text: "Error al actualizar usuario.",
+                    icon: "error",
+                    timer: 2000,
+                    showConfirmButton: false,
+                  });
+                });
+            };
           })
           .catch((error) => {
             console.error("Error al obtener usuario:", error);
           });
       }
 
-      // Función para obtener los permisos y las áreas
+      // Función para cargar las opciones de permisos y áreas en los selectores
       function loadPermissionsAndAreas(userPermissionId, userAreaId) {
         Promise.all([getPermissions(), getAreas()])
           .then(([permissions, areas]) => {
-            // Llenar los selectores con las opciones de permisos y áreas
             fillSelectOptions(
               "edit-permission",
               permissions,
@@ -890,25 +976,133 @@
           });
       }
 
-      // Función para obtener los permisos desde el backend
+      // Función para obtener permisos desde el backend
       function getPermissions() {
         return fetch("http://localhost:8000/permission")
-          .then((response) => response.json())
-          .then((data) => data.permissions) // Asumimos que la respuesta es un objeto con una propiedad `permissions`
+          .then((response) => {
+            if (!response.ok) throw new Error("Error al obtener permisos");
+            return response.json();
+          })
+          .then((data) => data.permissions || [])
           .catch((error) => {
             console.error("Error al obtener permisos:", error);
-            return []; // Retornar un array vacío en caso de error
+            return [];
           });
       }
 
-      // Función para obtener las áreas desde el backend
+      // Función para obtener áreas desde el backend
       function getAreas() {
         return fetch("http://localhost:8000/area")
-          .then((response) => response.json())
-          .then((data) => data.areas) // Asumimos que la respuesta es un objeto con una propiedad `areas`
+          .then((response) => {
+            if (!response.ok) throw new Error("Error al obtener áreas");
+            return response.json();
+          })
+          .then((data) => data.areas || [])
           .catch((error) => {
             console.error("Error al obtener áreas:", error);
-            return []; // Retornar un array vacío en caso de error
+            return [];
+          });
+      }
+
+      // Función para llenar un <select> con opciones
+      function fillSelectOptions(
+        selectId,
+        data,
+        valueField,
+        textField,
+        selectedValue
+      ) {
+        const select = document.getElementById(selectId);
+        if (!select) {
+          console.error(`No se encontró el select con ID: ${selectId}`);
+          return;
+        }
+
+        select.innerHTML = ""; // Limpiar opciones previas
+
+        // Crear una opción por defecto
+        const defaultOption = document.createElement("option");
+        defaultOption.value = "";
+        defaultOption.text = "Selecciona una opción";
+        select.appendChild(defaultOption);
+
+        if (Array.isArray(data)) {
+          data.forEach((item) => {
+            const option = document.createElement("option");
+            option.value = item[valueField];
+            option.text = item[textField];
+
+            if (item[valueField] == selectedValue) {
+              option.selected = true;
+            }
+            select.appendChild(option);
+          });
+        } else {
+          console.error(
+            "No se recibió un array válido para llenar las opciones."
+          );
+        }
+      }
+      // Función para cerrar el modal (si se necesita invocar desde otro lado)
+      function closeModal() {
+        const modalElement = document.getElementById("editUserModal");
+        if (modalElement) {
+          const editUserModal = bootstrap.Modal.getInstance(modalElement);
+          if (editUserModal) {
+            editUserModal.hide();
+          }
+        }
+      }
+
+      // Función para obtener permisos y áreas
+      function loadPermissionsAndAreas(userPermissionId, userAreaId) {
+        Promise.all([getPermissions(), getAreas()])
+          .then(([permissions, areas]) => {
+            fillSelectOptions(
+              "edit-permission",
+              permissions,
+              "id",
+              "str_name_permission",
+              userPermissionId
+            );
+            fillSelectOptions(
+              "edit-area",
+              areas,
+              "id",
+              "str_name_area",
+              userAreaId
+            );
+          })
+          .catch((error) => {
+            console.error("Error al obtener permisos o áreas:", error);
+          });
+      }
+
+      // Función para obtener permisos desde el backend
+      function getPermissions() {
+        return fetch("http://localhost:8000/permission")
+          .then((response) => {
+            if (!response.ok) throw new Error("Error al obtener permisos");
+            return response.json();
+          })
+          .then((data) => data.permissions || [])
+          .catch((error) => {
+            console.error("Error al obtener permisos:", error);
+            return [];
+          });
+      }
+
+      // Función para obtener áreas desde el backend
+      function getAreas() {
+        return fetch("http://localhost:8000/area")
+          .then((response) => {
+            if (!response.ok) throw new Error("Error al obtener áreas");
+            return response.json();
+          })
+          .then((data) => data.areas || [])
+          .catch((error) => {
+            console.error("Error al obtener áreas:", error);
+            return [];
           });
       }
 
@@ -921,12 +1115,17 @@
         selectedValue
       ) {
         const select = document.getElementById(selectId);
-        select.innerHTML = ""; // Limpiar las opciones previas
+        if (!select) {
+          console.error(`No se encontró el select con ID: ${selectId}`);
+          return;
+        }
+
+        select.innerHTML = ""; // Limpiar opciones previas
 
         // Crear una opción vacía por defecto
         const defaultOption = document.createElement("option");
         defaultOption.value = "";
-        defaultOption.text = `Selecciona una opción`;
+        defaultOption.text = "Selecciona una opción";
         select.appendChild(defaultOption);
 
         if (Array.isArray(data)) {
@@ -935,9 +1134,8 @@
             option.value = item[valueField];
             option.text = item[textField];
 
-            // Verificar si esta opción es la seleccionada
             if (item[valueField] == selectedValue) {
-              option.selected = true; // Seleccionar la opción
+              option.selected = true;
             }
 
             select.appendChild(option);
@@ -951,42 +1149,14 @@
 
       // Función para cerrar el modal
       function closeModal() {
-        const editUserModal = bootstrap.Modal.getInstance(
-          document.getElementById("editUserModal")
-        );
-        editUserModal.hide();
+        const modalElement = document.getElementById("editUserModal");
+        if (modalElement) {
+          const editUserModal = bootstrap.Modal.getInstance(modalElement);
+          if (editUserModal) {
+            editUserModal.hide();
+          }
+        }
       }
-
-      // Función para actualizar el usuario
-      document
-        .getElementById("edit-user-form")
-        .addEventListener("submit", function (event) {
-          event.preventDefault();
-
-          const userId = document.getElementById("edit-user-id").value;
-          const updatedUser = {
-            str_name_user: document.getElementById("edit-username").value,
-            str_email: document.getElementById("edit-email").value,
-            id_permission: document.getElementById("edit-permission").value,
-            id_area: document.getElementById("edit-area").value,
-          };
-
-          fetch(`http://localhost:8000/userById/${userId}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(updatedUser),
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              alert("Usuario actualizado correctamente.");
-              closeModal(); // Cerrar el modal al actualizar
-            })
-            .catch((error) => {
-              console.error("Error al actualizar:", error);
-            });
-        });
 
       function deleteUser(userId) {
         Swal.fire({
@@ -1064,7 +1234,6 @@
           }
         });
 
-        // Manejo del formulario
         // Manejo del formulario
         userForm.addEventListener("submit", async (event) => {
           event.preventDefault(); // Evita recargar la página
