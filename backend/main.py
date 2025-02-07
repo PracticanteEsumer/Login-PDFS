@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 import os
-from storage import get_user, get_users,delete_user, add_user,update_user
-from storage import get_areas
+from storage import get_user, get_users,delete_user, add_user
+from storage import get_areas,delete_area
 from storage import get_permission
 from pydantic import BaseModel
 
@@ -385,18 +385,7 @@ def get_permission_and_area(permission_id: int, area_id: int, db: Session):
         raise HTTPException(status_code=500, detail=f"Error al obtener datos: {str(e)}")
 
 
-
-
-
-
-
-
-
-
-
 # RUTAS DE AREAS
-
-
 @app.get("/areas", response_class=HTMLResponse)
 async def list_areas():
     # Obtener los usuarios usando la función de storage.py
@@ -428,7 +417,7 @@ async def list_areas():
 
 
 @app.get("/area")
-async def get_areas():
+async def get_area():
     # Crear la conexión a la base de datos
     connection = get_db()
     cursor = connection.cursor(dictionary=True)
@@ -514,6 +503,20 @@ async def search_permissions(query: str = Query(..., alias="query")):
     connection.close()
 
     return {"areas": areas}
+
+
+@app.delete("/areas/{area_id}")
+async def delete_area_route(area_id: int):
+    # Llamar a la función de eliminación de area
+    print(f"Intentando eliminar el area con ID: {area_id}")
+    success = delete_area(area_id)
+
+    if success:
+        # Si el usuario se eliminó con éxito, devolver un mensaje de éxito
+        return JSONResponse(status_code=200, content={"message": "area eliminada exitosamente"})
+    else:
+        # Si no se encontró el usuario o ocurrió algún error, devolver un mensaje de error
+        raise HTTPException(status_code=404, detail="area no encontrado")
 
 
 # RUTAS DE PERMISOS 

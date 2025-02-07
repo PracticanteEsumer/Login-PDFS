@@ -202,6 +202,38 @@ def get_areas():
     return areas
 
 
+
+def delete_area(area_id):
+    connection = get_db()
+    cursor = connection.cursor()
+
+    try:
+        # Verificar si el usuario existe
+        check_query = "SELECT id FROM tbl_areas WHERE id = %s"
+        cursor.execute(check_query, (area_id,))
+        area = cursor.fetchone()  # Si existe, fetchone devolverá el usuario
+
+        if not area:  # Si no existe el usuario
+            print(f"area con ID {area_id} no encontrado.")
+            return False  # Usuario no encontrado
+
+        # Si el usuario existe, proceder a eliminarlo
+        query = "DELETE FROM tbl_areas WHERE id = %s"
+        cursor.execute(query, (area_id,))
+        connection.commit()  # Confirmar los cambios
+        success = cursor.rowcount > 0  # Verificar si se eliminó el usuario
+        return success  # Retorna True si se eliminó, False si no
+
+    except Exception as e:
+        connection.rollback()  # Revertir en caso de error
+        print(f"Error al eliminar el area: {e}")
+        return False
+
+    finally:
+        cursor.close()  # Cerrar el cursor
+        connection.close()  # Cerrar la conexión
+
+
 # Función para obtener los usuarios desde la base de datos
 def get_permission():
     connection = get_db()
