@@ -646,6 +646,8 @@
 
         // Abrir el modal cuando el usuario hace clic en el botón "Crear Usuario"
         createBtn.addEventListener("click", () => {
+          // Cargar dinámicamente las opciones de permisos y áreas para el modal de creación
+          loadPermissionsAndAreasForCreate();
           userModal.show();
         });
 
@@ -682,14 +684,9 @@
                 icon: "success",
                 timer: 2000,
                 showConfirmButton: false,
-              })
-              .then(() => {
-                    // Una vez que la alerta se cierra, ocultamos el modal y recargamos la página.
-                    handleUserModal.hide();
-                    location.reload();
-                  });
-
-              
+              }).then(() => {
+                location.reload();
+              });
             } else {
               const errorData = await response.json();
               console.error("Error al registrar el usuario:", errorData.detail);
@@ -703,59 +700,56 @@
       }
 
       async function renderUsers(page) {
-        const users = await fetchUsers(page);
-        const tbody = document.querySelector("#users-table tbody");
-        tbody.innerHTML = "";
+        try {
+          const [users, permissions, areas] = await Promise.all([
+            fetchUsers(page),
+            getPermissions(),
+            getAreas(),
+          ]);
 
-        users.forEach((user) => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${user.username}</td>
-            <td>${user.email}</td>
-            <td>${
-              user.id_permission === 1
-                ? "Administrador"
-                : user.id_permission === 2
-                ? "Descarga de archivos"
-                : user.id_permission === 3
-                ? "Visualización de archivos"
-                : "Desconocido"
-            }</td>
-            <td>${
-              user.id_area === 1
-                ? "Bienestar"
-                : user.id_area === 2
-                ? "Gestion TIC"
-                : user.id_area === 3
-                ? "Comunicaciones y Marca"
-                : "Desconocido"
-            }</td>
-           <td class="action-cell">
-    <button class="action-btn edit-btn" onclick="editUser(${user.id})"> 
-        <i class="fas fa-edit"></i> 
-    </button>
-    <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">
-    <i class="fas fa-trash-alt"></i> 
-</button>
+          const tbody = document.querySelector("#users-table tbody");
+          tbody.innerHTML = "";
 
-</td>
+          users.forEach((user) => {
+            const permission = permissions.find(
+              (p) => p.id === user.id_permission
+            );
+            const area = areas.find((a) => a.id === user.id_area);
 
+            const row = document.createElement("tr");
+            row.innerHTML = `
+        <td>${user.username}</td>
+        <td>${user.email}</td>
+        <td>${permission ? permission.str_name_permission : "Desconocido"}</td>
+        <td>${area ? area.str_name_area : "Desconocido"}</td>
+        <td class="action-cell">
+          <button class="action-btn edit-btn" onclick="editUser(${user.id})"> 
+              <i class="fas fa-edit"></i> 
+          </button>
+          <button class="action-btn delete-btn" onclick="deleteUser(${
+            user.id
+          })">
+              <i class="fas fa-trash-alt"></i> 
+          </button>
+        </td>
+      `;
 
+            tbody.appendChild(row);
+          });
 
-        `;
+          // Actualizar la información de la página
+          document.getElementById(
+            "page-info"
+          ).textContent = `Página ${currentPage} de ${totalPages}`;
 
-          tbody.appendChild(row);
-        });
-
-        // Actualizar la información de la página
-        document.getElementById(
-          "page-info"
-        ).textContent = `Página ${currentPage} de ${totalPages}`;
-
-        // Deshabilitar botones de página según sea necesario
-        document.getElementById("prev-page").disabled = currentPage === 1;
-        document.getElementById("next-page").disabled =
-          currentPage === totalPages;
+          // Deshabilitar botones de página según sea necesario
+          document.getElementById("prev-page").disabled = currentPage === 1;
+          document.getElementById("next-page").disabled =
+            currentPage === totalPages;
+        } catch (error) {
+          console.error("Error al renderizar usuarios:", error);
+          alert("Ocurrió un error al cargar los usuarios.");
+        }
       }
 
       function changePage(direction) {
@@ -960,22 +954,56 @@
       }
 
       // Función para cargar las opciones de permisos y áreas en los selectores
-      function loadPermissionsAndAreas(userPermissionId, userAreaId) {
+      function loadPermissionsAndAreas(
+        selectPermissionId,
+        selectAreaId,
+        userPermissionId = null,
+        userAreaId = null
+      ) {
         Promise.all([getPermissions(), getAreas()])
           .then(([permissions, areas]) => {
+            // Rellenar el selector de permisos
             fillSelectOptions(
-              "edit-permission",
+              selectPermissionId,
               permissions,
               "id",
               "str_name_permission",
               userPermissionId
             );
+
+            // Rellenar el selector de áreas
             fillSelectOptions(
-              "edit-area",
+              selectAreaId,
               areas,
               "id",
               "str_name_area",
               userAreaId
+            );
+          })
+          .catch((error) => {
+            console.error("Error al obtener permisos o áreas:", error);
+          });
+      }
+
+      function loadPermissionsAndAreasForCreate() {
+        Promise.all([getPermissions(), getAreas()])
+          .then(([permissions, areas]) => {
+            // Llenar el selector de permisos en el modal de creación
+            fillSelectOptions(
+              "permission", // ID del select en el modal de creación
+              permissions,
+              "id",
+              "str_name_permission",
+              null // No se preselecciona ningún valor
+            );
+
+            // Llenar el selector de áreas en el modal de creación
+            fillSelectOptions(
+              "area", // ID del select en el modal de creación
+              areas,
+              "id",
+              "str_name_area",
+              null // No se preselecciona ningún valor
             );
           })
           .catch((error) => {

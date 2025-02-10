@@ -4,7 +4,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Redirect
 from fastapi.staticfiles import StaticFiles
 import os
 from storage import get_user, get_users,delete_user, add_user
-from storage import get_areas,delete_area
+from storage import get_areas,add_area,delete_area
 from storage import get_permission
 from pydantic import BaseModel
 
@@ -438,6 +438,30 @@ async def get_area():
         return JSONResponse(content={"areas": areas})
     else:
         return JSONResponse(status_code=404, content={"message": "No se encontraron áreas"})
+    
+
+# Modelo Pydantic para los datos de entrada del area
+class AreaCreate(BaseModel):
+    str_name_area: str
+    str_description: str
+
+
+# Endpoint para crear el area
+@app.post("/areas/")
+async def create_area(area: AreaCreate):
+    try:
+        # Llamar a la función para agregar el area a la base de datos
+        result = add_area(area.str_name_area, area.str_description)
+
+        # Verificar el resultado de la función add_user
+        if result["success"]:
+            return JSONResponse(status_code=201, content={"message": result["message"]})
+        else:
+            raise HTTPException(status_code=400, detail=result["message"])
+
+    except Exception as e:
+        # Si ocurre un error inesperado, devolver un error 500
+        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
 
 
 
@@ -507,16 +531,119 @@ async def search_permissions(query: str = Query(..., alias="query")):
 
 @app.delete("/areas/{area_id}")
 async def delete_area_route(area_id: int):
-    # Llamar a la función de eliminación de area
-    print(f"Intentando eliminar el area con ID: {area_id}")
-    success = delete_area(area_id)
+    print(f"Intentando eliminar el área con ID: {area_id}")
+    result = delete_area(area_id)
 
-    if success:
-        # Si el usuario se eliminó con éxito, devolver un mensaje de éxito
-        return JSONResponse(status_code=200, content={"message": "area eliminada exitosamente"})
+    if result.get("success"):
+        # Eliminación exitosa
+        return JSONResponse(status_code=200, content={"message": "Área eliminada exitosamente"})
     else:
-        # Si no se encontró el usuario o ocurrió algún error, devolver un mensaje de error
-        raise HTTPException(status_code=404, detail="area no encontrado")
+        # Dependiendo del error, se puede devolver un código distinto
+        error_message = result.get("error", "Área no encontrada")
+        # Si el error indica que existen usuarios asociados, se devuelve 400
+        if error_message == "Área tiene usuarios asociados":
+            raise HTTPException(status_code=400, detail=error_message)
+        else:
+            raise HTTPException(status_code=404, detail=error_message)
+        
+
+# Modelo Pydantic para la actualización de usuario
+class AreaUpdate(BaseModel):
+    str_name_area: str
+    str_description: str
+
+    class Config:
+        extra = "ignore"
+
+async def get_area_update(
+    str_name_area: str = Form(...),
+    str_description: str = Form(...)
+) -> AreaUpdate:
+    return AreaUpdate(
+        str_name_area=str_name_area,
+        str_description=str_description
+    )
+
+# Función para actualizar usuario con validación de área y permiso
+def update_area(id: int, name: str, description: str ,db: Session):
+    try:
+        # Obtener usuario actual
+        area = get_user_by_id(id, db)
+
+        # Validar existencia de área y permiso
+        get_permission_and_area(name, description, db)
+
+        query = """
+            UPDATE tbl_areas
+            SET str_name_area = %s, str_description = %s
+            WHERE id = %s
+        """
+        db.execute(query, (name, description, id))
+        db.commit()
+        
+        return {"success": True, "message": "Area actualizado exitosamente"}
+    except HTTPException as http_exc:
+        db.rollback()
+        raise http_exc
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error en la actualización: {str(e)}")
+    
+@app.put("/areasUpdate/{id}")
+async def update_area_endpoint(
+    id: int,
+    area_data: AreaUpdate = Depends(get_area_update)
+):
+    try:
+        connection = get_db()
+        cursor = connection.cursor(dictionary=True)
+
+        query = """
+            UPDATE tbl_areas
+            SET str_name_area = %s, str_description = %s
+            WHERE id = %s
+        """
+        values = (
+            area_data.str_name_area,
+            area_data.str_description,
+            id
+        )
+
+        cursor.execute(query, values)
+        connection.commit()
+        cursor.close()
+        connection.close()
+
+        return {"message": "Area actualizada correctamente."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error en la actualización: {str(e)}")
+    
+
+@app.get("/areaById/{area_id}")
+async def get_areaById(area_id: int):
+    # Crear la conexión a la base de datos
+    connection = get_db()
+    cursor = connection.cursor(dictionary=True)
+
+    # Consulta SQL para obtener un usuario por su ID
+    query = """
+        SELECT id, str_name_area AS nameArea, str_description AS description
+        FROM tbl_areas
+        WHERE id = %s
+    """
+    cursor.execute(query, (area_id,))
+    area = cursor.fetchone()
+
+    # Cerrar la conexión a la base de datos
+    cursor.close()
+    connection.close()
+
+    if area is None:
+        # Si no se encuentra el usuario, devolver un error 404
+        raise HTTPException(status_code=404, detail="Area no encontrada")
+
+    # Retornar los detalles del usuario en formato JSON
+    return JSONResponse(content=area)
 
 
 # RUTAS DE PERMISOS 

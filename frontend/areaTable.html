@@ -13,6 +13,11 @@
       rel="stylesheet"
     />
 
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
     <style>
       /* Estilos generales */
       @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap");
@@ -280,6 +285,65 @@
       .swal2-loader {
         border-color: #d33 transparent transparent transparent !important;
       }
+
+      /* Modal más ancho y colores oscuros */
+      .modal-dialog {
+        max-width: 75%; /* Aumenté el ancho del modal */
+      }
+
+      .bg-primary {
+        --bs-bg-opacity: 1;
+        background-color: #202b52 !important;
+      }
+
+      .modal-header {
+        background-color: #343a40; /* Color de fondo oscuro */
+        color: rgb(0, 0, 0); /* Texto blanco */
+      }
+
+      .modal-title {
+        margin-bottom: 0;
+        line-height: var(--bs-modal-title-line-height);
+      }
+
+      .modal-body {
+        background-color: #ffffff; /* Fondo oscuro para el cuerpo del modal */
+      }
+
+      .form-control {
+        background-color: #ffffff; /* Fondo oscuro para los inputs */
+        border: 1px solid #000000; /* Borde más suave */
+        color: #000000; /* Texto más claro */
+      }
+
+      .form-control:focus {
+        background-color: #ffffff; /* Fondo oscuro al enfocar */
+        border-color: #17a2b8; /* Borde más brillante al enfocar */
+        box-shadow: 0 0 5px rgba(23, 162, 184, 0.5); /* Sombra al enfocar */
+        outline: none;
+      }
+
+      /* Botones */
+      .btn-success {
+        background-color: #202b52; /* Verde más oscuro */
+        border: none;
+        font-weight: bold;
+      }
+
+      .btn-success:hover {
+        background-color: #273b83; /* Color más oscuro al pasar el ratón */
+      }
+
+      .btn-close {
+        background-color: transparent;
+        border: none;
+        color: white;
+        font-size: 1.2rem;
+      }
+
+      .btn-close:hover {
+        color: #ff1100; /* Color de la cruz al pasar el ratón */
+      }
     </style>
   </head>
   <body>
@@ -339,6 +403,105 @@
       </div>
     </div>
 
+    <!-- Modal para registrar area -->
+    <div
+      class="modal fade"
+      id="areaModal"
+      tabindex="-1"
+      aria-labelledby="areaModalLabel"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="areaModalLabel">Registrar Area</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+
+          <div class="modal-body">
+            <form id="area-form">
+              <div class="mb-3">
+                <label class="form-label">Nombre de area</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="nameArea"
+                  autocomplete="nameArea"
+                  required
+                />
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">descripción</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="description"
+                  autocomplete="description"
+                  required
+                />
+              </div>
+
+              <button type="submit" class="btn btn-success w-100">
+                Registrar
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="editAreaModal"
+      tabindex="-1"
+      aria-labelledby="editAreaModalLabel"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="editAreaModalLabel">Editar Area</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="edit-area-form">
+              <input type="hidden" id="edit-area-id" name="area_id" />
+              <div class="mb-3">
+                <label>Nombre de area</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="edit-areaname"
+                  name="str_name_area"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label>Descripcion</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="edit-description"
+                  name="str_description"
+                  required
+                />
+              </div>
+              <button type="submit" class="btn btn-success">Actualizar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script>
       let currentPage = 1;
       let totalPages = 1;
@@ -369,8 +532,92 @@
         } catch (error) {
           console.error("Error al obtener los datos:", error);
           document.querySelector("#areas-table tbody").innerHTML = `
-      <tr><td colspan="5" style="text-align:center; color:red;">Error cargando areas</td></tr>`;
+            <tr><td colspan="5" style="text-align:center; color:red;">Error cargando areas</td></tr>`;
           return [];
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        // Llamamos a la función para manejar el modal
+        handleAreaModal();
+      });
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const createBtn = document.getElementById("create-btn"); // Verifica que este ID sea correcto
+        if (createBtn) {
+          createBtn.addEventListener("click", () => {
+            console.log("Botón creado!");
+          });
+        } else {
+          console.log("Elemento no encontrado");
+        }
+      });
+
+      function handleAreaModal() {
+        // Obtener el botón "Crear area" y el modal
+        const createBtn = document.getElementById("create-btn");
+        const areaModalElement = document.getElementById("areaModal");
+
+        // Inicializar el modal de Bootstrap
+        const areaModal = new bootstrap.Modal(areaModalElement);
+
+        // Abrir el modal cuando el usuario hace clic en el botón "Crear area"
+        createBtn.addEventListener("click", () => {
+          areaModal.show();
+        });
+
+        // Obtener el formulario de registro de area
+        const areaForm = document.getElementById("area-form");
+
+        areaForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const areaData = {
+            str_name_area: document.getElementById("nameArea").value,
+            str_description: document.getElementById("description").value,
+          };
+
+          try {
+            const response = await fetch("http://localhost:8000/areas/", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(areaData),
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              console.log("Area Registrada:", data.message);
+              areaModal.hide();
+              areaForm.reset();
+              Swal.fire({
+                title: "¡Éxito!",
+                text: "Area registrada correctamente.",
+                icon: "success",
+                timer: 2000,
+                showConfirmButton: false,
+              }).then(() => {
+                // Una vez que la alerta se cierra, ocultamos el modal y recargamos la página.
+                handleAreaModal.hide();
+                location.reload();
+              });
+            } else {
+              const errorData = await response.json();
+              console.error("Error al registrar el area:", errorData.detail);
+              alert("Error al registrar el area: " + errorData.detail);
+            }
+          } catch (error) {
+            console.error("Error de red:", error);
+            alert("Hubo un problema al intentar registrar el area.");
+          }
+        });
+      }
+
+      function closeModal() {
+        const modalElement = document.getElementById("editAreaModal");
+        if (modalElement) {
+          const editUserModal = bootstrap.Modal.getInstance(modalElement);
+          if (editUserModal) {
+            editUserModal.hide();
+          }
         }
       }
 
@@ -382,21 +629,18 @@
         areas.forEach((area) => {
           const row = document.createElement("tr");
           row.innerHTML = `
-            <td>${area.nameArea}</td>
-            <td>${area.description}</td>
-            <td class="action-cell">
-    <button class="action-btn edit-btn" onclick="editArea(${area.id})"> 
-        <i class="fas fa-edit"></i> 
-    </button>
-    <button class="action-btn delete-btn" onclick="deleteArea(${area.id})">
-    <i class="fas fa-trash-alt"></i> 
-</button>
+                  <td>${area.nameArea}</td>
+                  <td>${area.description}</td>
+                  <td class="action-cell">
+          <button class="action-btn edit-btn" onclick="editArea(${area.id})">
+              <i class="fas fa-edit"></i>
+          </button>
+          <button class="action-btn delete-btn" onclick="deleteArea(${area.id})">
+          <i class="fas fa-trash-alt"></i>
+      </button>
 
-</td>
-
-
-
-        `;
+      </td>
+              `;
 
           tbody.appendChild(row);
         });
@@ -449,17 +693,17 @@
           data.areas.forEach((area) => {
             const row = document.createElement("tr");
             row.innerHTML = `
-        <td>${area.nameArea}</td>
-        <td>${area.description}</td>
-        <td class="action-cell">
-          <button class="action-btn edit-btn" onclick="editArea(${area.id})"> 
-              <i class="fas fa-edit"></i> 
-          </button>
-          <button class="action-btn delete-btn" onclick="deleteArea(${area.id})">
-              <i class="fas fa-trash-alt"></i> 
-          </button>
-        </td>
-      `;
+              <td>${area.nameArea}</td>
+              <td>${area.description}</td>
+              <td class="action-cell">
+                <button class="action-btn edit-btn" onclick="editArea(${area.id})">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="action-btn delete-btn" onclick="deleteArea(${area.id})">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+              </td>
+            `;
             tbody.appendChild(row);
           });
 
@@ -475,8 +719,101 @@
       }
 
       function editArea(areaId) {
-        console.log("Editar area con ID:", areaId);
-        // Lógica para editar area
+        console.log("Editando usuario con ID:", areaId);
+
+        // Primero, se consulta el backend para obtener los datos actuales del usuario
+        fetch(`http://localhost:8000/areaById/${areaId}`)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Error en la respuesta del servidor");
+            }
+            return response.json();
+          })
+          .then((area) => {
+            console.log("Area recibido:", area);
+
+            // Obtener referencias a los inputs del formulario (asegúrate de que cada input tenga el atributo "name")
+            const areanameInput = document.getElementById("edit-areaname");
+            const descriptionInput =
+              document.getElementById("edit-description");
+
+            const areaIdInput = document.getElementById("edit-area-id");
+
+            if (!areanameInput || !descriptionInput) {
+              console.error("No se encontraron los inputs correctamente.");
+              return;
+            }
+
+            // Llenar los campos con la información del usuario
+            areaIdInput.value = areaId; // Guarda el ID en un campo oculto (con name="user_id")
+            areanameInput.value = area.nameArea || "";
+            descriptionInput.value = area.description;
+
+            // Mostrar el modal de edición usando Bootstrap
+            const editAreaModal = new bootstrap.Modal(
+              document.getElementById("editAreaModal")
+            );
+            editAreaModal.show();
+
+            // Referencia al formulario
+            const editAreaForm = document.getElementById("edit-area-form");
+
+            // Configurar el evento onsubmit del formulario
+            editAreaForm.onsubmit = (event) => {
+              event.preventDefault(); // Prevenir recarga de la página
+
+              // Crear un objeto FormData a partir del formulario.
+              // Esto recogerá todos los campos cuyos atributos "name" estén definidos.
+              const formData = new FormData(editAreaForm);
+
+              console.log("Enviando actualización de usuario con FormData:");
+              // Imprimir en consola cada par clave/valor para depurar
+              for (let pair of formData.entries()) {
+                console.log(pair[0] + ": " + pair[1]);
+              }
+
+              // Enviar la actualización al backend.
+              fetch(`http://localhost:8000/areasUpdate/${areaId}`, {
+                method: "PUT",
+                body: formData, // Se envía como multipart/form-data
+              })
+                .then((response) => {
+                  if (!response.ok)
+                    throw new Error("Error al actualizar el area");
+                  return response.json();
+                })
+                .then((data) => {
+                  console.log("Respuesta del servidor:", data);
+                  // Usamos SweetAlert para mostrar la alerta de éxito
+                  Swal.fire({
+                    title: "¡Éxito!",
+                    text: data.message || "Area actualizada exitosamente",
+                    icon: "success",
+                    timer: 2000,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                  }).then(() => {
+                    // Una vez que la alerta se cierra, ocultamos el modal y recargamos la página.
+                    editAreaModal.hide();
+                    location.reload();
+                  });
+                })
+                .catch((error) => {
+                  console.error("Error al actualizar area:", error);
+                  // Mostrar error con SweetAlert también, si se desea
+                  Swal.fire({
+                    title: "¡Error!",
+                    text: "Error al actualizar area.",
+                    icon: "error",
+                    timer: 2000,
+                    showConfirmButton: false,
+                  });
+                });
+            };
+          })
+          .catch((error) => {
+            console.error("Error al obtener area:", error);
+          });
       }
 
       function deleteArea(areaId) {
@@ -485,13 +822,13 @@
           text: "No podrás revertir esta acción.",
           icon: "warning",
           showCancelButton: true,
-          confirmButtonColor: "#d33",
-          cancelButtonColor: "#3085d6",
           confirmButtonText: "Sí, eliminar",
           cancelButtonText: "Cancelar",
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "#3085d6",
         }).then((result) => {
           if (result.isConfirmed) {
-            // Mostrar alerta de carga mientras se procesa la solicitud
+            // Mostrar indicador de carga mientras se procesa la solicitud
             Swal.fire({
               title: "Eliminando...",
               text: "Por favor, espera.",
@@ -501,40 +838,54 @@
               },
             });
 
+            // Realizar la petición DELETE al endpoint
             fetch(`/areas/${areaId}`, { method: "DELETE" })
               .then((response) => {
-                if (response.ok) {
+                // Convertir la respuesta a JSON y también devolver el código de estado
+                return response.json().then((data) => {
+                  return { status: response.status, data };
+                });
+              })
+              .then(({ status, data }) => {
+                if (status === 200) {
+                  // Caso de eliminación exitosa
                   Swal.fire({
                     title: "¡Eliminado!",
-                    text: "El area ha sido eliminado correctamente.",
+                    text: data.message,
                     icon: "success",
                     timer: 2000,
                     showConfirmButton: false,
                   });
-                  renderAreas(); // Actualizar la lista
+                  // Llama a la función que actualiza la lista de áreas
+                  renderAreas();
                 } else {
+                  // Caso de error (por ejemplo, área con usuarios asociados o no encontrada)
                   Swal.fire({
                     title: "Error",
-                    text: "Hubo un problema al eliminar el usuario.",
+                    text: data.detail || "No se pudo eliminar el área.",
                     icon: "error",
+                    showConfirmButton: true,
                   });
                 }
               })
               .catch((error) => {
-                console.error("Error al eliminar el usuario:", error);
+                console.error("Error al eliminar el área:", error);
                 Swal.fire({
-                  title: "Error de conexión",
-                  text: "No se pudo conectar con el servidor.",
+                  title: "Error",
+                  text: "Ocurrió un error al conectar con el servidor.",
                   icon: "error",
+                  showConfirmButton: true,
                 });
               });
           }
         });
       }
+
       // Inicializar la tabla de area
       renderAreas(currentPage);
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

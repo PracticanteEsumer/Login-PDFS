@@ -169,13 +169,6 @@ def update_user(id: int, str_name_user: str, str_email: str, str_password: str, 
         cursor.close()
         connection.close()
 
-        
-        
-
-
-
-
-
 
 
 
@@ -202,36 +195,109 @@ def get_areas():
     return areas
 
 
+# Función para agregar un area a la base de datos
+def add_area(str_name_area: str, str_description: str):
+    connection = get_db()
+    cursor = connection.cursor()
+
+    try:
+        # Verificar si el usuario ya existe
+        query_check = "SELECT id FROM tbl_areas WHERE str_name_area = %s"
+        cursor.execute(query_check, (str_name_area,))
+        existing_area = cursor.fetchone()
+
+        if existing_area:
+            return {"success": False, "message": "El area ya existe"}
+
+        # Insertar nuevo usuario
+        query_insert = """
+            INSERT INTO tbl_areas (str_name_area, str_description)
+            VALUES (%s, %s) 
+        """
+        cursor.execute(query_insert, (str_name_area, str_description))
+        connection.commit()
+
+        return {"success": True, "message": "Area creada correctamente"}
+
+    except Exception as e:
+        return {"success": False, "message": f"Error: {str(e)}"}
+
+    finally:
+        cursor.close()
+        connection.close()
+
+# Función para actualizar el usuario en la base de datos
+def update_area(id: int, str_name_area: str, str_description: str):
+    connection = get_db()
+    cursor = connection.cursor()
+
+    try:
+        # Verificar si el usuario existe
+        query_check = "SELECT id FROM tbl_areas WHERE id = %s"
+        cursor.execute(query_check, (id,))
+        existing_area = cursor.fetchone()
+
+        if not existing_area:
+            return {"success": False, "message": "Area no encontrado"}
+
+        # Actualizar los datos del area
+        query_update = """
+            UPDATE tbl_areas
+            SET str_name_area = %s, str_description = %s
+            WHERE id = %s
+        """
+        cursor.execute(query_update, (str_name_area,str_description, id))
+        connection.commit()
+
+        return {"success": True, "message": "Area actualizado correctamente"}
+
+    except Exception as e:
+        return {"success": False, "message": f"Error: {str(e)}"}
+
+    finally:
+        cursor.close()
+        connection.close()
 
 def delete_area(area_id):
     connection = get_db()
     cursor = connection.cursor()
 
     try:
-        # Verificar si el usuario existe
+        # 1. Verificar que el área exista en tbl_areas
         check_query = "SELECT id FROM tbl_areas WHERE id = %s"
         cursor.execute(check_query, (area_id,))
-        area = cursor.fetchone()  # Si existe, fetchone devolverá el usuario
+        area = cursor.fetchone()
 
-        if not area:  # Si no existe el usuario
-            print(f"area con ID {area_id} no encontrado.")
-            return False  # Usuario no encontrado
+        if not area:
+            print(f"Área con ID {area_id} no encontrada.")
+            return {"success": False, "error": "Área no encontrada"}
 
-        # Si el usuario existe, proceder a eliminarlo
-        query = "DELETE FROM tbl_areas WHERE id = %s"
-        cursor.execute(query, (area_id,))
-        connection.commit()  # Confirmar los cambios
-        success = cursor.rowcount > 0  # Verificar si se eliminó el usuario
-        return success  # Retorna True si se eliminó, False si no
+        # 2. Verificar si existen usuarios asociados en tbl_users
+        check_users_query = "SELECT id FROM tbl_users WHERE id_area = %s"
+        cursor.execute(check_users_query, (area_id,))
+        associated_user = cursor.fetchone()
+        if associated_user:
+            print(f"No se puede eliminar el área {area_id} porque tiene usuarios asociados.")
+            return {"success": False, "error": "Área tiene usuarios asociados"}
+
+        # 3. Proceder a eliminar el área si no tiene usuarios asociados
+        delete_query = "DELETE FROM tbl_areas WHERE id = %s"
+        cursor.execute(delete_query, (area_id,))
+        connection.commit()
+        success = cursor.rowcount > 0  # True si se eliminó alguna fila
+
+        return {"success": success}
 
     except Exception as e:
-        connection.rollback()  # Revertir en caso de error
-        print(f"Error al eliminar el area: {e}")
-        return False
+        connection.rollback()
+        print(f"Error al eliminar el área: {e}")
+        return {"success": False, "error": str(e)}
 
     finally:
-        cursor.close()  # Cerrar el cursor
-        connection.close()  # Cerrar la conexión
+        cursor.close()
+        connection.close()
+
+
 
 
 # Función para obtener los usuarios desde la base de datos
