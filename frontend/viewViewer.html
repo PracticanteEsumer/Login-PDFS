@@ -14,111 +14,111 @@
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap");
 
-/* Estilo global para los textos */
-body {
-  font-family: "Poppins", sans-serif;
-  font-size: 16px; /* Tamaño base */
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+      /* Estilo global para los textos */
+      body {
+        font-family: "Poppins", sans-serif;
+        font-size: 16px; /* Tamaño base */
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-/* Estilo para la caja de la alerta SweetAlert */
-.swal2-popup {
-  background-color: #f4f4f9;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  font-family: inherit;
-}
+      /* Estilo para la caja de la alerta SweetAlert */
+      .swal2-popup {
+        background-color: #f4f4f9;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        font-family: inherit;
+      }
 
-/* Estilo para los botones personalizados de SweetAlert */
-.swal2-popup .swal2-confirm,
-.swal2-popup .swal2-cancel {
-  font-weight: 600;
-  padding: 10px 20px;
-  border-radius: 5px;
-  text-transform: uppercase;
-}
+      /* Estilo para los botones personalizados de SweetAlert */
+      .swal2-popup .swal2-confirm,
+      .swal2-popup .swal2-cancel {
+        font-weight: 600;
+        padding: 10px 20px;
+        border-radius: 5px;
+        text-transform: uppercase;
+      }
 
-.swal2-popup .swal2-confirm {
-  background-color: #202b52;
-  color: white;
-  border: none;
-}
+      .swal2-popup .swal2-confirm {
+        background-color: #202b52;
+        color: white;
+        border: none;
+      }
 
-.swal2-popup .swal2-cancel {
-  background-color: red;
-  color: white;
-  border: none;
-}
+      .swal2-popup .swal2-cancel {
+        background-color: red;
+        color: white;
+        border: none;
+      }
 
-.swal2-popup .swal2-title {
-  color: #202b52;
-  font-size: 1.5rem;
-}
+      .swal2-popup .swal2-title {
+        color: #202b52;
+        font-size: 1.5rem;
+      }
 
-.swal2-popup .swal2-text {
-  color: #555;
-  font-size: 1rem;
-}
+      .swal2-popup .swal2-text {
+        color: #555;
+        font-size: 1rem;
+      }
 
-/* Estilos para el Navbar a la izquierda */
-.navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 150px;
-  height: 100%;
-  background-color: #202b52;
-  color: white;
-  padding: 20px;
-  border-radius: 0 5px 5px 0;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
+      /* Estilos para el Navbar a la izquierda */
+      .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 150px;
+        height: 100%;
+        background-color: #202b52;
+        color: white;
+        padding: 20px;
+        border-radius: 0 5px 5px 0;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
 
-.navbar ul {
-  list-style-type: none;
-  padding: 0;
-}
+      .navbar ul {
+        list-style-type: none;
+        padding: 0;
+      }
 
-.navbar li {
-  margin: 20px 0;
-}
+      .navbar li {
+        margin: 20px 0;
+      }
 
-.navbar a {
-  color: rgb(255, 255, 255);
-  text-decoration: none;
-  font-weight: 600;
-  text-transform: uppercase;
-  display: block;
-}
+      .navbar a {
+        color: rgb(255, 255, 255);
+        text-decoration: none;
+        font-weight: 600;
+        text-transform: uppercase;
+        display: block;
+      }
 
-.navbar a:hover {
-  color: rgb(228, 213, 213);
-}
+      .navbar a:hover {
+        color: rgb(228, 213, 213);
+      }
 
-/* Estilo específico para el botón "Cerrar sesión" */
-#logout-btn {
-  background-color: #ff0000;
-  color: white;
-  padding: 10px 30px;
-  font-size: 16px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  display: block;
-  margin: 10px 210px 10px auto;
-  text-align: center;
-  width: auto;
-  position: absolute; /* Posicionamiento absoluto */
-  bottom: 70px; /* Alineado a 20px de la parte inferior */
-  left: 19%; /* Centrado horizontalmente */
-}
-/* Estilos para el contenido desplazado debido al navbar */
-.container {
-  margin-left: 180px;
-  padding: 20px;
-}
+      /* Estilo específico para el botón "Cerrar sesión" */
+      #logout-btn {
+        background-color: #ff0000;
+        color: white;
+        padding: 10px 30px;
+        font-size: 16px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        display: block;
+        margin: 10px 210px 10px auto;
+        text-align: center;
+        width: auto;
+        position: absolute; /* Posicionamiento absoluto */
+        bottom: 70px; /* Alineado a 20px de la parte inferior */
+        left: 19%; /* Centrado horizontalmente */
+      }
+      /* Estilos para el contenido desplazado debido al navbar */
+      .container {
+        margin-left: 180px;
+        padding: 20px;
+      }
     </style>
 
     <title>Vista viewer</title>
@@ -126,17 +126,15 @@ body {
   <body>
     <!-- Navbar -->
     <div class="navbar">
-        <ul>
-          <li>
-            <a href="/viewer"
-              ><i class="fas fa-file-pdf"></i> Archivos PDFS</a
-            >
-          </li>
-          <button class="regresar-btn" id="logout-btn">
-            <i class="fas fa-sign-out-alt"></i> Cerrar sesión
-          </button>
-        </ul>
-      </div>
+      <ul>
+        <li>
+          <a href="/viewer"><i class="fas fa-file-pdf"></i> Archivos PDFS</a>
+        </li>
+        <button class="regresar-btn" id="logout-btn">
+          <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+        </button>
+      </ul>
+    </div>
     <div class="container">
       <!-- Cargamos la imagen o el logo -->
       <div class="logo-container">
@@ -165,7 +163,6 @@ body {
         <span id="page-info"></span>
         <button id="next-page" class="page-btn">Siguiente</button>
       </div>
-
     </div>
 
     <script>
@@ -183,18 +180,31 @@ body {
 
       // Función para cargar archivos desde el servidor y dividirlos en páginas
       async function loadFiles(page = 1) {
-        const response = await fetch("/api/get-files"); // Ruta que devuelve los archivos de la carpeta
-        const data = await response.json();
+        try {
+          // Se hace una petición al endpoint que devuelve la lista de archivos y el nombre de la carpeta.
+          const response = await fetch("/api/get-files");
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Error al cargar archivos:", errorData.detail);
+            document.getElementById("files-container").innerHTML =
+              "<tr><td colspan='1'>No se pudieron cargar los archivos.</td></tr>";
+            return;
+          }
+          const data = await response.json();
+          // data debe tener "files" (arreglo) y "folder" (nombre de la carpeta)
+          allFiles = data.files; // Ejemplo: ["doc1.pdf", "doc2.pdf", ...]
+          const folder = data.folder; // Ejemplo: "newarea" (ya sanitizado)
 
-        if (response.ok) {
-          allFiles = data.files; // Guardar todos los archivos
-
+          // Paginación: calcular los índices para mostrar la página solicitada
           const startIndex = (page - 1) * filesPerPage;
-          const endIndex = startIndex + filesPerPage;
-          const filesToDisplay = allFiles.slice(startIndex, endIndex);
+          const filesToDisplay = allFiles.slice(
+            startIndex,
+            startIndex + filesPerPage
+          );
 
+          // Seleccionar y limpiar el contenedor de archivos
           const filesContainer = document.getElementById("files-container");
-          filesContainer.innerHTML = ""; // Limpiar el contenedor de archivos
+          filesContainer.innerHTML = "";
 
           // Crear filas de la tabla para los archivos
           filesToDisplay.forEach((file) => {
@@ -203,23 +213,29 @@ body {
             // Columna del nombre del archivo
             const nameCell = document.createElement("td");
             const fileLink = document.createElement("a");
-            fileLink.href = `/CarpetaInfo/${file}`; // Ruta del archivo PDF
-            fileLink.textContent = file; // Nombre del archivo
-            fileLink.className = "file-name"; // Estilo para los enlaces
-            fileLink.target = "_blank"; // Abrir en una nueva pestaña
-            fileLink.setAttribute("onclick", "viewPDF(event, this.href)"); // Añadir el evento para mostrar el PDF sin poder editar ni descargar
+            // Se construye la URL usando el nombre de la carpeta devuelto por el back-end.
+            // Ahora la ruta es: /files/<folder>/<file>
+            fileLink.href = `/files/${folder}/${file}`;
+            fileLink.textContent = file;
+            fileLink.className = "file-name";
+            fileLink.target = "_blank";
+            // Si usas una función para visualizar el PDF sin descargarlo, puedes agregar:
+            fileLink.addEventListener("click", function (event) {
+              event.preventDefault();
+              viewPDF(event, fileLink.href);
+            });
             nameCell.appendChild(fileLink);
             row.appendChild(nameCell);
 
-            // Añadir fila a la tabla
+            // Agregar la fila al contenedor
             filesContainer.appendChild(row);
           });
 
           updatePagination();
-        } else {
-          const filesContainer = document.getElementById("files-container");
-          filesContainer.innerHTML =
-            "<tr><td colspan='2'>No se pudieron cargar los archivos.</td></tr>";
+        } catch (error) {
+          console.error("Error al cargar archivos:", error);
+          document.getElementById("files-container").innerHTML =
+            "<tr><td colspan='1'>No se pudieron cargar los archivos.</td></tr>";
         }
       }
 
@@ -253,62 +269,106 @@ body {
 
       // Función para mostrar el PDF en el visor sin opciones de descarga ni edición
       function viewPDF(event, fileUrl) {
-        event.preventDefault(); // Evitar el comportamiento predeterminado del enlace
+        event.preventDefault(); // Evita la acción predeterminada del enlace
 
-        // Crear el iframe para mostrar el PDF
-        const iframe = document.createElement("iframe");
-        iframe.src = fileUrl + "#toolbar=0&navpanes=0&scrollbar=0"; // Parámetros para limitar la interfaz del visor
-        iframe.style.width = "100%";
-        iframe.style.height = "100%"; // Usar toda la altura del contenedor
-        iframe.style.border = "none";
+        // Realizar fetch del PDF como ArrayBuffer para usarlo con PDF.js
+        fetch(fileUrl)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Error al cargar el PDF.");
+            }
+            return response.arrayBuffer();
+          })
+          .then((buffer) => {
+            const pdfData = new Uint8Array(buffer);
+            // Cargar el documento PDF con PDF.js
+            pdfjsLib
+              .getDocument({ data: pdfData })
+              .promise.then((pdfDoc) => {
+                // Renderizamos la primera página; puedes ajustar para múltiples páginas
+                pdfDoc.getPage(1).then((page) => {
+                  // Ajusta el scale a 1.0 (o un valor menor) para reducir el zoom
+                  const scale = 1.0;
+                  const viewport = page.getViewport({ scale: scale });
+                  const canvas = document.createElement("canvas");
+                  const context = canvas.getContext("2d");
+                  canvas.height = viewport.height;
+                  canvas.width = viewport.width;
 
-        // Crear un modal para mostrar el PDF
-        const modal = document.createElement("div");
-        modal.style.position = "fixed";
-        modal.style.top = "0";
-        modal.style.left = "0";
-        modal.style.width = "100%";
-        modal.style.height = "100%";
-        modal.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
-        modal.style.display = "flex";
-        modal.style.flexDirection = "column"; // Apilar el contenido verticalmente
-        modal.style.alignItems = "center";
-        modal.style.justifyContent = "center";
-        modal.style.zIndex = "1000";
+                  const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport,
+                  };
 
-        // Ajustar el contenedor del contenido del modal
-        const modalContent = document.createElement("div");
-        modalContent.style.backgroundColor = "#fff";
-        modalContent.style.width = "90%"; // Usar un ancho relativo al tamaño de la pantalla
-        modalContent.style.height = "90%"; // Usar una altura relativa al tamaño de la pantalla
-        modalContent.style.borderRadius = "8px";
-        modalContent.style.overflow = "hidden"; // Evitar desbordamientos
-        modalContent.style.display = "flex";
-        modalContent.style.flexDirection = "column";
+                  page.render(renderContext).promise.then(() => {
+                    // Crear un modal para mostrar el PDF
+                    const modal = document.createElement("div");
+                    modal.style.position = "fixed";
+                    modal.style.top = "0";
+                    modal.style.left = "0";
+                    modal.style.width = "100%";
+                    modal.style.height = "100%";
+                    modal.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+                    modal.style.display = "flex";
+                    modal.style.alignItems = "center";
+                    modal.style.justifyContent = "center";
+                    modal.style.zIndex = "1000";
 
-        // Añadir el iframe dentro del modal
-        modalContent.appendChild(iframe);
+                    // Contenedor del modal con scroll habilitado
+                    const modalContent = document.createElement("div");
+                    modalContent.style.backgroundColor = "#fff";
+                    modalContent.style.width = "95%";
+                    modalContent.style.height = "95%";
+                    modalContent.style.borderRadius = "8px";
+                    modalContent.style.overflow = "auto"; // Permitir scroll si el contenido es mayor
+                    modalContent.style.position = "relative";
+                    modalContent.style.display = "flex";
+                    modalContent.style.flexDirection = "column";
+                    modalContent.style.alignItems = "center";
+                    modalContent.style.justifyContent = "center";
 
-        // Crear el botón de cierre
-        const closeBtn = document.createElement("button");
-        closeBtn.textContent = "Cerrar";
-        closeBtn.style.margin = "10px auto 0 auto"; // Centrar el botón horizontalmente
-        closeBtn.style.padding = "10px 20px";
-        closeBtn.style.fontSize = "16px";
-        closeBtn.style.cursor = "pointer";
-        closeBtn.style.alignSelf = "center"; // Centrar el botón dentro del contenedor del modal
-        closeBtn.onclick = function () {
-          document.body.removeChild(modal); // Cerrar el modal
-        };
+                    // Añadir el canvas (con el PDF renderizado) al contenedor del modal
+                    modalContent.appendChild(canvas);
 
-        // Añadir el botón al modal
-        modalContent.appendChild(closeBtn);
+                    // Botón de cierre del modal
+                    const closeBtn = document.createElement("button");
+                    closeBtn.textContent = "Cerrar";
+                    closeBtn.style.position = "absolute";
+                    closeBtn.style.top = "10px";
+                    closeBtn.style.right = "10px";
+                    closeBtn.style.padding = "10px 20px";
+                    closeBtn.style.backgroundColor = "#202b52";
+                    closeBtn.style.color = "#fff";
+                    closeBtn.style.border = "none";
+                    closeBtn.style.borderRadius = "5px";
+                    closeBtn.style.cursor = "pointer";
+                    closeBtn.addEventListener("click", function () {
+                      document.body.removeChild(modal);
+                    });
 
-        // Añadir el contenido del modal al modal principal
-        modal.appendChild(modalContent);
-
-        // Agregar el modal al cuerpo del documento
-        document.body.appendChild(modal);
+                    modalContent.appendChild(closeBtn);
+                    modal.appendChild(modalContent);
+                    document.body.appendChild(modal);
+                  });
+                });
+              })
+              .catch((error) => {
+                console.error("Error al renderizar el PDF:", error);
+                Swal.fire({
+                  title: "Error",
+                  text: "No se pudo cargar el PDF.",
+                  icon: "error",
+                });
+              });
+          })
+          .catch((error) => {
+            console.error("Error al cargar el PDF:", error);
+            Swal.fire({
+              title: "Error",
+              text: "No se pudo cargar el PDF.",
+              icon: "error",
+            });
+          });
       }
 
       loadFiles(currentPage); // Cargar los archivos inicialmente

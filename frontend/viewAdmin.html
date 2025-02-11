@@ -129,9 +129,7 @@
     <div class="navbar">
       <ul>
         <li>
-          <a href="/admin"
-            ><i class="fas fa-file-pdf"></i> Archivos PDFS</a
-          >
+          <a href="/admin"><i class="fas fa-file-pdf"></i> Archivos PDFS</a>
         </li>
         <li>
           <a href="/areas"><i class="fas fa-shield-alt"></i> Areas</a>
@@ -223,35 +221,53 @@
         }
       };
 
-      // Función para cargar archivos desde el servidor y dividirlos en páginas
       async function loadFiles(page = 1) {
-        const response = await fetch("/api/get-files");
-        const data = await response.json();
+        try {
+          // Se hace una petición al endpoint que devuelve la lista de archivos y el nombre de la carpeta.
+          const response = await fetch("/api/get-files");
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Error al cargar archivos:", errorData.detail);
+            document.getElementById("files-container").innerHTML =
+              "<tr><td colspan='2'>No se pudieron cargar los archivos.</td></tr>";
+            return;
+          }
+          const data = await response.json();
+          // data debe tener "files" (arreglo de nombres de archivos) y "folder" (nombre de la carpeta)
+          allFiles = data.files; // Ejemplo: ["doc1.pdf", "doc2.pdf", ...]
+          const folder = data.folder; // Ejemplo: "Marketing" (ya sanitizado)
 
-        if (response.ok) {
-          allFiles = data.files;
-
+          // Paginación: calcular los índices para mostrar la página solicitada
           const startIndex = (page - 1) * filesPerPage;
-          const endIndex = startIndex + filesPerPage;
-          const filesToDisplay = allFiles.slice(startIndex, endIndex);
+          const filesToDisplay = allFiles.slice(
+            startIndex,
+            startIndex + filesPerPage
+          );
 
+          // Seleccionar y limpiar el contenedor de archivos
           const filesContainer = document.getElementById("files-container");
           filesContainer.innerHTML = "";
 
+          // Por cada archivo, crear una fila de la tabla
           filesToDisplay.forEach((file) => {
             const row = document.createElement("tr");
 
+            // Celda para el enlace del archivo
             const nameCell = document.createElement("td");
             const fileLink = document.createElement("a");
-            fileLink.href = `/CarpetaInfo/${file}`;
+            // Se construye la URL usando el nombre de la carpeta devuelto por el back-end.
+            // Aquí usamos la nueva ruta: "/files/<folder>/<file>"
+            fileLink.href = `/files/${folder}/${file}`;
             fileLink.textContent = file;
             fileLink.className = "file-name";
             fileLink.target = "_blank";
             nameCell.appendChild(fileLink);
             row.appendChild(nameCell);
 
+            // Celda para las acciones: eliminar y descargar
             const actionsCell = document.createElement("td");
 
+            // Botón para eliminar el archivo
             const deleteBtn = document.createElement("button");
             deleteBtn.className = "delete-btn";
             deleteBtn.innerHTML = '<i class="bi bi-trash"></i>';
@@ -265,7 +281,8 @@
               });
 
               if (confirmDelete.isConfirmed) {
-                const deleteResponse = await fetch(`/files/${file}`, {
+                // Construir la URL de eliminación usando el folder y el nombre del archivo
+                const deleteResponse = await fetch(`/files/${folder}/${file}`, {
                   method: "DELETE",
                 });
 
@@ -278,35 +295,34 @@
                 } else {
                   showAlert("error", "Error al eliminar el archivo.");
                 }
-              }
-              else{
-                showAlert("info", "Se cancelo la eliminación.");
+              } else {
+                showAlert("info", "Se canceló la eliminación.");
               }
             };
+            actionsCell.appendChild(deleteBtn);
 
+            // Botón para descargar el archivo
             const downloadBtn = document.createElement("button");
             downloadBtn.className = "download-btn";
             downloadBtn.innerHTML = '<i class="bi bi-download"></i>';
-
             downloadBtn.onclick = function () {
               const link = document.createElement("a");
-              link.href = `/CarpetaInfo/${file}`;
+              // Construir la URL de descarga usando el folder y el nombre del archivo
+              link.href = `/files/${folder}/${file}`;
               link.download = file;
               link.click();
             };
-
-            actionsCell.appendChild(deleteBtn);
             actionsCell.appendChild(downloadBtn);
 
             row.appendChild(actionsCell);
-
             filesContainer.appendChild(row);
           });
 
+          // Actualizar la paginación (asegúrate de que updatePagination esté definida)
           updatePagination();
-        } else {
-          const filesContainer = document.getElementById("files-container");
-          filesContainer.innerHTML =
+        } catch (error) {
+          console.error("Error al cargar archivos:", error);
+          document.getElementById("files-container").innerHTML =
             "<tr><td colspan='2'>No se pudieron cargar los archivos.</td></tr>";
         }
       }

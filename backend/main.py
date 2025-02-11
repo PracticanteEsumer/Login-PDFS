@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, Form, HTTPException, Request, Response, UploadFile,Depends
+from fastapi import FastAPI, File, Form, HTTPException, Request, Response, UploadFile,Depends,Cookie
 from sqlalchemy.orm import Session
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -29,9 +29,6 @@ app.add_middleware(
 # Montar la carpeta estática para que FastAPI reconozca los archivos de estilo CSS
 app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "../frontend/static")), name="static")
 
-# # Montar la carpeta 'CarpetaInfo' como una carpeta estática para acceder a los archivos PDF
-# app.mount("/CarpetaInfo", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "../CarpetaInfo")), name="CarpetaInfo")
-
 
 # Cargar la página de inicio de sesión
 @app.get("/", response_class=HTMLResponse)
@@ -42,35 +39,108 @@ async def index():
         # Retornamos la respuesta en HTML
         return HTMLResponse(content=f.read(), status_code=200)
 
-@app.post("/login", response_class=HTMLResponse)
-async def login(request: Request, strUsuario: str = Form(...), strContrasenna: str = Form(...)):
-    # Llamar a la función para obtener los datos del usuario
-    user = get_user(strUsuario, strContrasenna)
 
-    # Validar si el usuario existe
+# Función para obtener al usuario (incluyendo id, id_permission e id_area)
+def get_useR(str_name_user: str, str_password: str):
+    connection = get_db()
+    cursor = connection.cursor(dictionary=True)
+
+    query = """
+        SELECT id, str_name_user, str_email, str_password, id_permission, id_area
+        FROM tbl_users
+        WHERE str_name_user = %s
+    """
+    cursor.execute(query, (str_name_user,))
+    user = cursor.fetchone()
+    cursor.close()
+    connection.close()
+
+    if user and str_password == user['str_password']:
+        return {
+            "id": user["id"],  # <<-- Asegúrate de incluir este campo
+            "username": user["str_name_user"],
+            "email": user["str_email"],
+            "id_permission": user["id_permission"],
+            "id_area": user["id_area"],
+        }
+    return None
+
+# Función asíncrona para obtener el nombre del área a partir de su id  
+# (Se supone que esta consulta se realiza de forma asíncrona, por ejemplo, usando async/await)
+async def get_area_by_id(area_id: int, db: Session):
+    # Ajusta la consulta según tu base de datos; aquí se usa un ejemplo asíncrono.
+    # Si usas una librería que no es asíncrona, puedes hacerlo de forma síncrona.
+    query = "SELECT str_name_area FROM tbl_areas WHERE id = %s"
+    # Por simplicidad, usamos la sesión de base de datos en modo síncrono
+    cursor = db.cursor(dictionary=True)
+    cursor.execute(query, (area_id,))
+    result = cursor.fetchone()
+    cursor.close()
+    # En este ejemplo, devolvemos el nombre directamente; si no se encuentra, se devuelve None.
+    if result:
+        return result["str_name_area"]
+    return None
+
+
+
+@app.post("/login", response_class=HTMLResponse)
+async def login(
+    request: Request,
+    strUsuario: str = Form(...),
+    strContrasenna: str = Form(...),
+    db_session: Session = Depends(get_db)
+):
+    # Obtener datos del usuario (asegúrate de usar la función que devuelve el campo "id")
+    user = get_user(strUsuario, strContrasenna)
     if user is None:
         raise HTTPException(status_code=401, detail="Nombre de usuario o contraseña incorrectos")
 
-    # Validar el permiso del usuario para redirigirlo
+    # Determinar la redirección según el permiso
     id_permission = user["id_permission"]
-
-    # Redirección según el permiso
-    if id_permission == 1:  # Admin
+    if id_permission == 1:
         redirect_url = "/admin"
-    elif id_permission == 2:  # Usuario normal
+    elif id_permission == 2:
         redirect_url = "/viewer_downloader"
-    elif id_permission == 3:  # Usuario normal
+    elif id_permission == 3:
         redirect_url = "/viewer"
     else:
         raise HTTPException(status_code=403, detail="No tienes permiso para acceder a esta vista")
 
-    # Redirigir a la vista correspondiente
-    return RedirectResponse(url=redirect_url, status_code=303)
+    # Bloque adicional para obtener e imprimir archivos (para depuración)
+    user_area_id = user.get("id_area")
+    area_name = await get_area_by_id(user_area_id, db_session)  # Usar await si es asíncrona
+    if not area_name:
+        raise HTTPException(status_code=404, detail="Área no encontrada en la base de datos")
+    
+    sanitized_area = area_name.strip().replace(" ", "_")
+    base_folder = os.path.join(os.path.dirname(__file__), "../Areas")
+    folder_path = os.path.join(base_folder, sanitized_area)
+    
+    if os.path.exists(folder_path):
+        files = os.listdir(folder_path)
+        pdf_files = [file for file in files if file.lower().endswith(".pdf")]
+        if pdf_files:
+            print(f"Archivos en el área '{area_name}' (carpeta: '{sanitized_area}'): {pdf_files}")
+        else:
+            print(f"No se encontraron archivos PDF en el área '{area_name}' (carpeta: '{sanitized_area}').")
+    else:
+        print(f"La carpeta para el área '{area_name}' (carpeta: '{sanitized_area}') no existe.")
+    # Fin del bloque adicional
+
+    # Crear la respuesta de redirección y establecer la cookie con el ID del usuario
+    response = RedirectResponse(url=redirect_url, status_code=303)
+    response.set_cookie(key="user_id", value=str(user["id"]), httponly=True)
+    return response
+
+
+
+
+
+
+
 
 
 # RUTAS DE USUARIOS 
-
-
 @app.get("/users", response_class=HTMLResponse)
 async def list_users():
     # Obtener los usuarios usando la función de storage.py
@@ -264,11 +334,13 @@ async def create_user(user: UserCreate):
 
 
 # Función para obtener usuario por ID antes de actualizar
-def get_user_by_id(user_id: int, db: Session):
+def get_user_by_id(user_id: int, db):
     try:
-        query = "SELECT * FROM tbl_users WHERE id = %s"
-        result = db.execute(query, (user_id,))
-        user = result.fetchone()
+        cursor = db.cursor(dictionary=True)
+        query = "SELECT id, str_name_user, str_email, id_permission, id_area FROM tbl_users WHERE id = %s"
+        cursor.execute(query, (user_id,))
+        user = cursor.fetchone()
+        cursor.close()
         if not user:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
         return user
@@ -820,7 +892,34 @@ async def view_admin():
     with open(admin_page_path, "r", encoding="utf-8") as f:
         return HTMLResponse(content=f.read(), status_code=200)
     
-
+    
+@app.get("/api/get-files", response_class=JSONResponse)
+async def get_files(user_id: int = Cookie(None), db: Session = Depends(get_db)):
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Usuario no autenticado (cookie ausente)")
+    
+    user = get_user_by_id(int(user_id), db)
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    area_id = user["id_area"]
+    area_name = await get_area_by_id(area_id, db)
+    if not area_name:
+        raise HTTPException(status_code=404, detail="Área no encontrada en la base de datos")
+    
+    sanitized_area = area_name.strip().replace(" ", "_")
+    base_folder = os.path.join(os.path.dirname(__file__), "../Areas")
+    folder_path = os.path.join(base_folder, sanitized_area)
+    
+    if not os.path.exists(folder_path):
+        raise HTTPException(status_code=404, detail="Carpeta del área no encontrada")
+    
+    files = os.listdir(folder_path)
+    pdf_files = [f for f in files if f.lower().endswith(".pdf")]
+    if not pdf_files:
+        raise HTTPException(status_code=404, detail="No se encontraron archivos PDF en el área")
+    
+    return JSONResponse(content={"files": pdf_files, "folder": sanitized_area})
     
 # Vista para permisos de visualización y descarga
 @app.get("/viewer_downloader")
@@ -852,59 +951,7 @@ async def delete_file(filename: str):
         return {"message": f"Archivo '{filename}' eliminado correctamente."}
     else:
         raise HTTPException(status_code=404, detail="No se encontró el archivo a eliminar.")
-# New route for downloading files
-
-# Endpoint para obtener los archivos PDF
-@app.get("/api/get-files")
-async def get_files():
-    try:
-        # Ruta a la carpeta donde están los archivos PDF
-        folder_path = os.path.join(os.path.dirname(__file__), "../CarpetaInfo")
-        
-        # Verificar si la carpeta existe
-        if not os.path.exists(folder_path):
-            raise HTTPException(status_code=404, detail="Carpeta no encontrada")
-        
-        # Obtener lista de archivos de la carpeta
-        files = os.listdir(folder_path)
-        
-        # Filtrar solo los archivos .pdf
-        pdf_files = [file for file in files if file.endswith(".pdf")]
-        
-        # Si no hay archivos PDF
-        if not pdf_files:
-            raise HTTPException(status_code=404, detail="No se encontraron archivos PDF")
-        
-        # Retornar los nombres de los archivos PDF
-        return JSONResponse(content={"files": pdf_files})
     
-    except Exception as e:
-        # En caso de error, mostrar un mensaje adecuado
-        raise HTTPException(status_code=500, detail=str(e))
-
-# FUNCION PARA PODER ENRUTAR POR ROL 
-@app.get("/verdocumentos", response_class=HTMLResponse)
-async def ver_carpeta(request: Request):
-    user_role = request.headers.get("role")
-    print(f"Rol recibido en /verdocumentos: {user_role}")  # Esto imprimirá el valor del rol recibido
-
-    if user_role == "admin":
-        view_path = os.path.join(os.path.dirname(__file__), "../frontend/viewAdmin.html")
-    elif user_role == "viewer_downloader":
-        view_path = os.path.join(os.path.dirname(__file__), "../frontend/viewViewerDownloader.html")
-    elif user_role == "viewer":
-        view_path = os.path.join(os.path.dirname(__file__), "../frontend/viewViewer.html")
-    else:
-        raise HTTPException(status_code=403, detail="Rol no válido o no autorizado")
-    
-    with open(view_path, "r", encoding="utf-8") as f:
-        return HTMLResponse(content=f.read(), status_code=200)
-
-
-    
-    # # Leer y retornar el archivo HTML correspondiente
-    # with open(view_path, "r", encoding="utf-8") as f:
-    #     return HTMLResponse(content=f.read(), status_code=200)
 
 # Ruta para manejar el logout y redirigir al login
 @app.post("/logout")
@@ -926,17 +973,26 @@ async def upload_file(request: Request, file: UploadFile= File(...)):
     return{"message": f"Archivo '{file.filename}' subido correctamente a la carpeta."}
 
 
-# Ruta para descargar archivos y visualizar (admin y viewer_downloader)
-@app.get("/files/{file_name}")
-async def download_file(file_name:str, request: Request):
-    user_role = request.headers.get("Role")
-    if user_role not in ["admin", "viewer_downloader"]:
-        raise HTTPException(status_code=403, detail="Solo tienes permisos de visualización.")
-    
-    folder_path = os.path.join(os.path.dirname(__file__), "../CarpetaInfo")
+@app.api_route("/files/{folder}/{file_name}", methods=["GET", "HEAD", "DELETE"])
+async def download_file(folder: str, file_name: str, request: Request):
+    # Carpeta general donde se encuentran las áreas
+    base_folder = os.path.join(os.path.dirname(__file__), "../Areas")
+    folder_path = os.path.join(base_folder, folder)
     file_path = os.path.join(folder_path, file_name)
 
-    if os.path.exists(file_path):
-        return FileResponse(file_path, media_type='application/pdf', filename=file_name)
+    if request.method == "DELETE":
+        # Lógica para eliminar el archivo
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+                return JSONResponse(content={"detail": "Archivo eliminado correctamente."})
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Error al eliminar el archivo: {str(e)}")
+        else:
+            raise HTTPException(status_code=404, detail="Archivo no encontrado")
     else:
-        raise HTTPException(status_code=404, detail="Archivo no encontrado")
+        # Lógica para GET y HEAD: retornar el archivo PDF
+        if os.path.exists(file_path):
+            return FileResponse(file_path, media_type="application/pdf", filename=file_name)
+        else:
+            raise HTTPException(status_code=404, detail="Archivo no encontrado")
