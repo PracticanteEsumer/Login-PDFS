@@ -812,7 +812,7 @@ async def delete_file(filename: str):
         return {"message": f"Archivo '{filename}' eliminado correctamente."}
     else:
         raise HTTPException(status_code=404, detail="No se encontró el archivo a eliminar.")
-
+# New route for downloading files
 
 # Endpoint para obtener los archivos PDF
 @app.get("/api/get-files")
