@@ -9,61 +9,27 @@
       rel="stylesheet"
     />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Incluir PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap");
-
+      
       body {
         font-family: "Poppins", sans-serif;
-        font-size: 16px; /* Tamaño base */
+        font-size: 16px;
         margin: 0;
         padding: 0;
         box-sizing: border-box;
       }
-
-      /* Estilo para la caja de la alerta SweetAlert */
+      
+      /* Estilos para SweetAlert */
       .swal2-popup {
-        font-family: "Poppins", sans-serif; /* Aplica la fuente Poppins */
-        background-color: #f4f4f9; /* Fondo claro para la alerta */
-        border-radius: 10px; /* Bordes redondeados */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra para darle profundidad */
+        background-color: #f4f4f9;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
       }
-
-      /* Estilo para los botones personalizados de SweetAlert */
-      .swal2-popup .swal2-confirm,
-      .swal2-popup .swal2-cancel {
-        font-family: "Poppins", sans-serif; /* Fuente Poppins */
-        font-weight: 600;
-        padding: 10px 20px; /* Espaciado de los botones */
-        border-radius: 5px; /* Bordes redondeados en los botones */
-        text-transform: uppercase; /* Texto en mayúsculas */
-      }
-
-      /* Estilo para el botón de confirmación */
-      .swal2-popup .swal2-confirm {
-        background-color: #202b52; /* Color de fondo del botón de confirmar */
-        color: white; /* Color del texto */
-        border: none; /* Elimina bordes */
-      }
-
-      /* Estilo para el botón de cancelación */
-      .swal2-popup .swal2-cancel {
-        background-color: red; /* Color de fondo del botón de cancelar */
-        color: white; /* Color del texto */
-        border: none; /* Elimina bordes */
-      }
-
-      /* Estilo para el título de la alerta */
-      .swal2-popup .swal2-title {
-        color: #202b52; /* Color del título */
-        font-size: 1.5rem; /* Tamaño de fuente del título */
-      }
-
-      /* Estilo para el texto de la alerta */
-      .swal2-popup .swal2-text {
-        color: #555; /* Color del texto de la alerta */
-        font-size: 1rem; /* Tamaño de fuente del texto */
-      }
-      /* Estilos para el Navbar a la izquierda */
+      
+      /* Navbar */
       .navbar {
         position: fixed;
         top: 0;
@@ -74,30 +40,18 @@
         color: white;
         padding: 20px;
         border-radius: 0 5px 5px 0;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
       }
-
-      .navbar ul {
-        list-style-type: none;
-        padding: 0;
-      }
-
-      .navbar li {
-        margin: 20px 0;
-      }
-
+      .navbar ul { list-style-type: none; padding: 0; }
+      .navbar li { margin: 20px 0; }
       .navbar a {
-        color: rgb(255, 255, 255);
+        color: rgb(255,255,255);
         text-decoration: none;
         font-weight: 600;
         text-transform: uppercase;
         display: block;
       }
-
-      .navbar a:hover {
-        color: rgb(228, 213, 213);
-      }
-      /* Estilo específico para el botón "Cerrar sesión" */
+      .navbar a:hover { color: rgb(228,213,213); }
       #logout-btn {
         background-color: #ff0000;
         color: white;
@@ -110,44 +64,40 @@
         margin: 10px 210px 10px auto;
         text-align: center;
         width: auto;
-        position: absolute; /* Posicionamiento absoluto */
-        bottom: 70px; /* Alineado a 20px de la parte inferior */
-        left: 19%; /* Centrado horizontalmente */
+        position: absolute;
+        bottom: 70px;
+        left: 19%;
       }
-      /* Estilos para el contenido desplazado debido al navbar */
+      
+      /* Contenido */
       .container {
         margin-left: 180px;
         padding: 20px;
       }
-    </style>
 
-    <title>Vista VieweDownloader</title>
+    </style>
+    <title>Vista viewer</title>
   </head>
   <body>
     <!-- Navbar -->
     <div class="navbar">
       <ul>
         <li>
-          <a href="/viewer_downloader"
-            ><i class="fas fa-file-pdf"></i> Archivos PDFS</a
-          >
+          <a href="/viewer"><i class="fas fa-file-pdf"></i> Archivos PDFS</a>
         </li>
-        <button class="regresar-btn" id="logout-btn">
+        <button id="logout-btn">
           <i class="fas fa-sign-out-alt"></i> Cerrar sesión
         </button>
       </ul>
     </div>
+    
     <div class="container">
-      <!-- Cargamos la imagen o el logo -->
+      <!-- Logo -->
       <div class="logo-container">
-        <img
-          src="/static/img/ESUMERLOGO.png"
-          alt="imagen superior"
-          class="top-image"
-        />
+        <img src="/static/img/ESUMERLOGO.png" alt="imagen superior" class="top-image" />
       </div>
-
-      <!-- Tabla para mostrar los archivos disponibles -->
+      
+      <!-- Tabla para mostrar archivos -->
       <table class="files-table">
         <thead>
           <tr>
@@ -156,98 +106,201 @@
           </tr>
         </thead>
         <tbody id="files-container">
-          <!-- Los archivos se cargarán dinámicamente aquí -->
+          <!-- Se cargarán los archivos dinámicamente -->
         </tbody>
       </table>
-
+      
       <!-- Paginador -->
       <div class="paginator-container">
         <button id="prev-page" class="page-btn">Anterior</button>
         <span id="page-info"></span>
         <button id="next-page" class="page-btn">Siguiente</button>
       </div>
-
     </div>
-
+    
     <script>
-      const filesPerPage = 5; // Número de archivos por página
+      const filesPerPage = 5;
       let currentPage = 1;
       let allFiles = [];
 
-      // Función para cargar archivos desde el servidor y dividirlos en páginas
-      async function loadFiles(page = 1) {
-        const response = await fetch("/api/get-files"); // Ruta que devuelve los archivos de la carpeta
-        const data = await response.json();
-
+      // Función para cerrar sesión
+      document.getElementById("logout-btn").onclick = async function () {
+        const response = await fetch("/logout", { method: "POST" });
         if (response.ok) {
-          allFiles = data.files; // Guardar todos los archivos
+          window.location.href = "/";
+        }
+      };
 
+      // Función para actualizar la paginación
+      function updatePagination() {
+        const totalPages = Math.ceil(allFiles.length / filesPerPage);
+        const pageInfo = document.getElementById("page-info");
+        pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+        document.getElementById("prev-page").disabled = currentPage === 1;
+        document.getElementById("next-page").disabled = currentPage === totalPages;
+      }
+
+      // Función para cargar archivos y dividirlos en páginas
+      async function loadFiles(page = 1) {
+        try {
+          // Se hace un fetch al endpoint que devuelve { files: [...], folder: "newarea" }
+          const response = await fetch("/api/get-files");
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Error al cargar archivos:", errorData.detail);
+            document.getElementById("files-container").innerHTML =
+              "<tr><td colspan='2'>No se pudieron cargar los archivos.</td></tr>";
+            return;
+          }
+          const data = await response.json();
+          allFiles = data.files;
+          const folder = data.folder; // Nombre de la carpeta, por ejemplo "newarea"
+          
+          // Calcular la porción de archivos para la página actual
           const startIndex = (page - 1) * filesPerPage;
-          const endIndex = startIndex + filesPerPage;
-          const filesToDisplay = allFiles.slice(startIndex, endIndex);
-
+          const filesToDisplay = allFiles.slice(startIndex, startIndex + filesPerPage);
+          
+          // Limpiar el contenedor de archivos
           const filesContainer = document.getElementById("files-container");
-          filesContainer.innerHTML = ""; // Limpiar el contenedor de archivos
-
-          // Crear filas de la tabla para los archivos
+          filesContainer.innerHTML = "";
+          
+          // Crear filas para cada archivo
           filesToDisplay.forEach((file) => {
             const row = document.createElement("tr");
-
-            // Columna del nombre del archivo
+            
+            // Celda con el enlace para visualizar el archivo
             const nameCell = document.createElement("td");
             const fileLink = document.createElement("a");
-            fileLink.href = `/CarpetaInfo/${file}`; // Ruta del archivo PDF
-            fileLink.textContent = file; // Nombre del archivo
-            fileLink.className = "file-name"; // Estilo para los enlaces
-            fileLink.target = "_blank"; // Abrir en una nueva pestaña
+            // Construir la URL usando la ruta: /files/<folder>/<file>
+            fileLink.href = `/files/${folder}/${file}`;
+            fileLink.textContent = file;
+            fileLink.className = "file-name";
+            fileLink.target = "_blank";
+            // Al hacer clic, se muestra el PDF en un modal (sin opciones de descarga)
+            fileLink.addEventListener("click", function(event) {
+              event.preventDefault();
+              viewPDF(event, fileLink.href);
+            });
             nameCell.appendChild(fileLink);
             row.appendChild(nameCell);
-
-            // Columna de acciones
+            
+            // Celda de acciones: botón para descargar el archivo
             const actionsCell = document.createElement("td");
-
-            // Botón de descarga con ícono de Bootstrap Icons
             const downloadBtn = document.createElement("button");
-            downloadBtn.className = "download-btn"; // Asigna la clase para el estilo
-            downloadBtn.innerHTML = '<i class="bi bi-download"></i>'; // Añade el ícono
-
-            downloadBtn.onclick = function () {
+            downloadBtn.className = "download-btn";
+            downloadBtn.innerHTML = '<i class="bi bi-download"></i>';
+            downloadBtn.addEventListener("click", function() {
               const link = document.createElement("a");
-              link.href = `/CarpetaInfo/${file}`; // Ruta para descargar el archivo PDF
-              link.download = file; // Esto forzará la descarga
-              link.click(); // Simula el clic en el enlace para descargar el archivo
-            };
-
-            // Agregar botón de descarga
+              // Usar la misma ruta para descargar
+              link.href = `/files/${folder}/${file}`;
+              link.download = file;
+              link.click();
+            });
             actionsCell.appendChild(downloadBtn);
-
             row.appendChild(actionsCell);
-
-            // Añadir fila a la tabla
+            
             filesContainer.appendChild(row);
           });
-
+          
           updatePagination();
-        } else {
-          const filesContainer = document.getElementById("files-container");
-          filesContainer.innerHTML =
+        } catch (error) {
+          console.error("Error al cargar archivos:", error);
+          document.getElementById("files-container").innerHTML =
             "<tr><td colspan='2'>No se pudieron cargar los archivos.</td></tr>";
         }
       }
 
-      // Función para actualizar la información del paginador
-      function updatePagination() {
-        const pageInfo = document.getElementById("page-info");
-        const totalPages = Math.ceil(allFiles.length / filesPerPage);
-
-        pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
-
-        document.getElementById("prev-page").disabled = currentPage === 1;
-        document.getElementById("next-page").disabled =
-          currentPage === totalPages;
+      // Función para mostrar el PDF en un modal (solo visualización)
+      function viewPDF(event, fileUrl) {
+        event.preventDefault();
+        // Utilizamos fetch para obtener el PDF como ArrayBuffer y renderizarlo con PDF.js
+        fetch(fileUrl)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error("Error al cargar el PDF.");
+            }
+            return response.arrayBuffer();
+          })
+          .then(buffer => {
+            const pdfData = new Uint8Array(buffer);
+            pdfjsLib.getDocument({ data: pdfData }).promise.then(pdfDoc => {
+              pdfDoc.getPage(1).then(page => {
+                const scale = 1.0; // Ajusta el zoom si es necesario
+                const viewport = page.getViewport({ scale: scale });
+                const canvas = document.createElement("canvas");
+                const context = canvas.getContext("2d");
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                
+                const renderContext = {
+                  canvasContext: context,
+                  viewport: viewport
+                };
+                page.render(renderContext).promise.then(() => {
+                  // Crear modal para mostrar el PDF renderizado
+                  const modal = document.createElement("div");
+                  modal.style.position = "fixed";
+                    modal.style.top = "0";
+                    modal.style.left = "0";
+                    modal.style.width = "100%";
+                    modal.style.height = "100%";
+                    modal.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+                    modal.style.display = "flex";
+                    modal.style.alignItems = "center";
+                    modal.style.justifyContent = "center";
+                    modal.style.zIndex = "1000";
+                  
+                  const modalContent = document.createElement("div");
+                  modalContent.style.backgroundColor = "#fff";
+                  modalContent.style.width = "90%";
+                  modalContent.style.height = "90%";
+                  modalContent.style.borderRadius = "8px";
+                  modalContent.style.overflow = "auto";
+                  modalContent.style.position = "relative";
+                  modalContent.appendChild(canvas);
+                  
+                  // Botón de cierre del modal
+                  const closeBtn = document.createElement("button");
+                  closeBtn.textContent = "Cerrar";
+                  closeBtn.style.position = "absolute";
+                  closeBtn.style.top = "10px";
+                  closeBtn.style.right = "10px";
+                  closeBtn.style.zIndex = "10";
+                  closeBtn.style.padding = "10px 20px";
+                  closeBtn.style.backgroundColor = "#202b52";
+                  closeBtn.style.color = "#fff";
+                  closeBtn.style.border = "none";
+                  closeBtn.style.borderRadius = "5px";
+                  closeBtn.style.cursor = "pointer";
+                  closeBtn.addEventListener("click", function () {
+                    document.body.removeChild(modal);
+                  });
+                  
+                  modalContent.appendChild(closeBtn);
+                  modal.appendChild(modalContent);
+                  document.body.appendChild(modal);
+                });
+              });
+            }).catch(error => {
+              console.error("Error al renderizar el PDF:", error);
+              Swal.fire({
+                title: "Error",
+                text: "No se pudo cargar el PDF.",
+                icon: "error"
+              });
+            });
+          })
+          .catch(error => {
+            console.error("Error al cargar el PDF:", error);
+            Swal.fire({
+              title: "Error",
+              text: "No se pudo cargar el PDF.",
+              icon: "error"
+            });
+          });
       }
 
-      // Manejar cambio de página
+      // Manejo de paginación: botones "Anterior" y "Siguiente"
       document.getElementById("prev-page").onclick = function () {
         if (currentPage > 1) {
           currentPage--;
@@ -263,18 +316,10 @@
         }
       };
 
-      // Al cargar la página, obtenemos los archivos y mostramos la primera página
+      // Cargar los archivos al iniciar la página
       document.addEventListener("DOMContentLoaded", function () {
         loadFiles(currentPage);
       });
-
-      // Función para salir con el botón
-      document.getElementById("logout-btn").onclick = async function () {
-        const response = await fetch("/logout", { method: "POST" });
-        if (response.ok) {
-          window.location.href = "/"; // Redirigir al login
-        }
-      };
     </script>
   </body>
 </html>
