@@ -25,9 +25,9 @@ def get_user(str_name_user: str, str_password: str):
     connection = get_db()
     cursor = connection.cursor(dictionary=True)
 
-    # Consulta para obtener el usuario, su contraseña, permisos y área
+    # Consulta para obtener el id, usuario, correo, contraseña, permisos y área
     query = """
-        SELECT str_name_user, str_email, str_password, id_permission, id_area
+        SELECT id, str_name_user, str_email, str_password, id_permission, id_area
         FROM tbl_users
         WHERE str_name_user = %s
     """
@@ -42,8 +42,9 @@ def get_user(str_name_user: str, str_password: str):
 
     # Verificar si el usuario existe y si la contraseña coincide
     if user and str_password == user['str_password']:
-        # Retornar datos completos del usuario
+        # Retornar datos completos del usuario, incluyendo el "id"
         return {
+            "id": user["id"],
             "username": user["str_name_user"],
             "email": user["str_email"],
             "id_permission": user["id_permission"],
@@ -52,6 +53,7 @@ def get_user(str_name_user: str, str_password: str):
 
     # Retornar None si la validación falla
     return None
+
 
 # Función para obtener los usuarios desde la base de datos
 def get_users():

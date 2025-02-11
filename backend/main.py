@@ -29,8 +29,10 @@ app.add_middleware(
 # Montar la carpeta estática para que FastAPI reconozca los archivos de estilo CSS
 app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "../frontend/static")), name="static")
 
-# Montar la carpeta 'CarpetaInfo' como una carpeta estática para acceder a los archivos PDF
-app.mount("/CarpetaInfo", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "../CarpetaInfo")), name="CarpetaInfo")
+# # Montar la carpeta 'CarpetaInfo' como una carpeta estática para acceder a los archivos PDF
+# app.mount("/CarpetaInfo", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "../CarpetaInfo")), name="CarpetaInfo")
+
+
 # Cargar la página de inicio de sesión
 @app.get("/", response_class=HTMLResponse)
 async def index():
@@ -447,21 +449,59 @@ class AreaCreate(BaseModel):
 
 
 # Endpoint para crear el area
+# @app.post("/areas/")
+# async def create_area(area: AreaCreate):
+#     try:
+#         # Llamar a la función para agregar el area a la base de datos
+#         result = add_area(area.str_name_area, area.str_description)
+
+#         # Verificar el resultado de la función add_user
+#         if result["success"]:
+#             return JSONResponse(status_code=201, content={"message": result["message"]})
+#         else:
+#             raise HTTPException(status_code=400, detail=result["message"])
+
+#     except Exception as e:
+#         # Si ocurre un error inesperado, devolver un error 500
+        # raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+
+def sanitize_folder_name(name: str) -> str:
+    """
+    Sanitiza el nombre del área para que sea seguro utilizarlo como nombre de carpeta.
+    Se eliminan espacios al inicio y al final y se reemplazan los espacios intermedios por guiones bajos.
+    """
+    return name.strip().replace(" ", "_")
+
+
+
+# Endpoint para crear el área y la carpeta correspondiente
 @app.post("/areas/")
 async def create_area(area: AreaCreate):
     try:
-        # Llamar a la función para agregar el area a la base de datos
+        # Llamamos a la función para agregar el área a la base de datos.
         result = add_area(area.str_name_area, area.str_description)
-
-        # Verificar el resultado de la función add_user
-        if result["success"]:
-            return JSONResponse(status_code=201, content={"message": result["message"]})
-        else:
+        if not result["success"]:
             raise HTTPException(status_code=400, detail=result["message"])
 
+        # Sanitizamos el nombre del área para utilizarlo como nombre de carpeta
+        folder_name = sanitize_folder_name(area.str_name_area)
+
+        # Definimos la ruta base donde se almacenarán las carpetas de cada área.
+        # Por ejemplo, creamos (o usamos) una carpeta "Areas" en el directorio principal.
+        base_folder = os.path.join(os.path.dirname(__file__), "../Areas")
+        os.makedirs(base_folder, exist_ok=True)
+
+        # Construimos la ruta completa de la carpeta para el área
+        area_folder = os.path.join(base_folder, folder_name)
+        os.makedirs(area_folder, exist_ok=True)
+
+        # Retornamos una respuesta exitosa
+        return JSONResponse(status_code=201, content={"message": result["message"]})
+    
     except Exception as e:
-        # Si ocurre un error inesperado, devolver un error 500
-        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+        # En caso de error inesperado, retornamos un error 500.
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 
 
@@ -842,7 +882,6 @@ async def get_files():
         # En caso de error, mostrar un mensaje adecuado
         raise HTTPException(status_code=500, detail=str(e))
 
-
 # FUNCION PARA PODER ENRUTAR POR ROL 
 @app.get("/verdocumentos", response_class=HTMLResponse)
 async def ver_carpeta(request: Request):
@@ -879,10 +918,6 @@ async def logout(response: Response):
 # Ruta para subir archivos (rol de admin)
 @app.post("/files/upload")
 async def upload_file(request: Request, file: UploadFile= File(...)):
-    # user_role = request.headers.get("Role")
-    # if user_role != 'admin':
-    #     raise HTTPException(status_code=403, detail="No tienes permisos para subir archivos.")
-    
     folder_path = os.path.join(os.path.dirname(__file__),"../CarpetaInfo")
     file_path = os.path.join(folder_path, file.filename)
     
