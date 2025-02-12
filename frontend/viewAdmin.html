@@ -369,27 +369,54 @@
           return;
         }
 
-        const response = await fetch("/api/get-files");
-        const data = await response.json();
+        let filesExisting = [];
+        try {
+          // Hacemos fetch al endpoint que devuelve { files: [...], folder: "newarea" }
+          const response = await fetch("/api/get-files");
+          if (response.ok) {
+            const data = await response.json();
+            filesExisting = data.files;
+          } else if (response.status === 404) {
+            // Si no se encontraron archivos (o la carpeta no existe), asumimos que no hay archivos subidos
+            filesExisting = [];
+          } else {
+            const errorData = await response.json();
+            showAlert(
+              "error",
+              errorData.detail || "Error al verificar archivos existentes."
+            );
+            return;
+          }
+        } catch (error) {
+          console.error("Error al obtener archivos existentes:", error);
+          showAlert("error", "Error al verificar archivos existentes.");
+          return;
+        }
 
-        if (data.files.includes(file.name)) {
+        // Verificar si el archivo ya está subido
+        if (filesExisting.includes(file.name)) {
           showAlert("error", `El archivo '${file.name}' ya está subido.`);
           fileInput.value = "";
           return;
         }
 
+        // Preparar el FormData para enviar el archivo
         const formData = new FormData();
         formData.append("file", file);
 
-        const uploadResponse = await fetch("/files/upload", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (uploadResponse.ok) {
-          showAlert("success", "Archivo subido correctamente.");
-          loadFiles(currentPage);
-        } else {
+        try {
+          const uploadResponse = await fetch("/files/upload", {
+            method: "POST",
+            body: formData,
+          });
+          if (uploadResponse.ok) {
+            showAlert("success", "Archivo subido correctamente.");
+            loadFiles(currentPage); // Recargar la lista de archivos
+          } else {
+            showAlert("error", "Error al subir el archivo.");
+          }
+        } catch (error) {
+          console.error("Error al subir el archivo:", error);
           showAlert("error", "Error al subir el archivo.");
         }
       };

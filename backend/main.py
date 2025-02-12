@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 import os
+import shutil   
 from storage import get_user, get_users,delete_user, add_user
 from storage import get_areas,add_area,delete_area
 from storage import get_permission
@@ -103,6 +104,8 @@ async def login(
         redirect_url = "/viewer_downloader"
     elif id_permission == 3:
         redirect_url = "/viewer"
+    elif id_permission == 4:
+        redirect_url = "/adminArea"
     else:
         raise HTTPException(status_code=403, detail="No tienes permiso para acceder a esta vista")
 
@@ -519,31 +522,12 @@ class AreaCreate(BaseModel):
     str_name_area: str
     str_description: str
 
-
-# Endpoint para crear el area
-# @app.post("/areas/")
-# async def create_area(area: AreaCreate):
-#     try:
-#         # Llamar a la función para agregar el area a la base de datos
-#         result = add_area(area.str_name_area, area.str_description)
-
-#         # Verificar el resultado de la función add_user
-#         if result["success"]:
-#             return JSONResponse(status_code=201, content={"message": result["message"]})
-#         else:
-#             raise HTTPException(status_code=400, detail=result["message"])
-
-#     except Exception as e:
-#         # Si ocurre un error inesperado, devolver un error 500
-        # raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
-
 def sanitize_folder_name(name: str) -> str:
     """
     Sanitiza el nombre del área para que sea seguro utilizarlo como nombre de carpeta.
     Se eliminan espacios al inicio y al final y se reemplazan los espacios intermedios por guiones bajos.
     """
     return name.strip().replace(" ", "_")
-
 
 
 # Endpoint para crear el área y la carpeta correspondiente
@@ -641,23 +625,67 @@ async def search_permissions(query: str = Query(..., alias="query")):
     return {"areas": areas}
 
 
-@app.delete("/areas/{area_id}")
-async def delete_area_route(area_id: int):
-    print(f"Intentando eliminar el área con ID: {area_id}")
-    result = delete_area(area_id)
+# @app.delete("/areas/{area_id}")
+# async def delete_area_route(area_id: int):
+#     print(f"Intentando eliminar el área con ID: {area_id}")
+#     result = delete_area(area_id)
 
+#     if result.get("success"):
+#         # Eliminación exitosa
+#         return JSONResponse(status_code=200, content={"message": "Área eliminada exitosamente"})
+#     else:
+#         # Dependiendo del error, se puede devolver un código distinto
+#         error_message = result.get("error", "Área no encontrada")
+#         # Si el error indica que existen usuarios asociados, se devuelve 400
+#         if error_message == "Área tiene usuarios asociados":
+#             raise HTTPException(status_code=400, detail=error_message)
+#         else:
+#             raise HTTPException(status_code=404, detail=error_message)
+
+@app.delete("/areas/{area_id}", response_class=JSONResponse)
+async def delete_area_route(
+    area_id: int,
+    user_id: int = Cookie(None),
+    db: Session = Depends(get_db)
+):
+    # Verificar que el usuario esté autenticado mediante la cookie
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Usuario no autenticado (cookie ausente)")
+    
+    # (Opcional) Obtener el usuario para validar su existencia
+    user = get_user_by_id(int(user_id), db)
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    
+    # Intentar eliminar el área de la base de datos
+    result = delete_area(area_id)
     if result.get("success"):
-        # Eliminación exitosa
-        return JSONResponse(status_code=200, content={"message": "Área eliminada exitosamente"})
+        # Si la eliminación fue exitosa, obtener el nombre real del área para construir la ruta a la carpeta
+        area_name = await get_area_by_id(area_id, db)
+        if not area_name:
+            raise HTTPException(status_code=404, detail="Área no encontrada en la base de datos")
+        
+        # Sanitizar el nombre para formar el nombre de la carpeta
+        sanitized_area = area_name.strip().replace(" ", "_")
+        base_folder = os.path.join(os.path.dirname(__file__), "../Areas")
+        folder_path = os.path.join(base_folder, sanitized_area)
+        
+        # Eliminar la carpeta si existe
+        if os.path.exists(folder_path):
+            try:
+                shutil.rmtree(folder_path)
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Error al eliminar la carpeta: {str(e)}")
+        return JSONResponse(status_code=200, content={"message": "Área y carpeta eliminadas exitosamente"})
     else:
-        # Dependiendo del error, se puede devolver un código distinto
+        # Si la función delete_area retornó un error, no eliminar la carpeta.
         error_message = result.get("error", "Área no encontrada")
-        # Si el error indica que existen usuarios asociados, se devuelve 400
         if error_message == "Área tiene usuarios asociados":
             raise HTTPException(status_code=400, detail=error_message)
         else:
             raise HTTPException(status_code=404, detail=error_message)
-        
+
+
 
 # Modelo Pydantic para la actualización de usuario
 class AreaUpdate(BaseModel):
@@ -892,6 +920,15 @@ async def view_admin():
     with open(admin_page_path, "r", encoding="utf-8") as f:
         return HTMLResponse(content=f.read(), status_code=200)
     
+
+# Vista para permisos de administrador
+@app.get("/adminArea")
+async def view_adminForArea():
+    # Cargar la página HTML para el administrador
+    admin_page_path = os.path.join(os.path.dirname(__file__), "../frontend/viewAdminforArea.html")
+    with open(admin_page_path, "r", encoding="utf-8") as f:
+        return HTMLResponse(content=f.read(), status_code=200)
+    
     
 @app.get("/api/get-files", response_class=JSONResponse)
 async def get_files(user_id: int = Cookie(None), db: Session = Depends(get_db)):
@@ -963,14 +1000,64 @@ async def logout(response: Response):
     return RedirectResponse(url="/", status_code=303)
 
 # Ruta para subir archivos (rol de admin)
-@app.post("/files/upload")
-async def upload_file(request: Request, file: UploadFile= File(...)):
-    folder_path = os.path.join(os.path.dirname(__file__),"../CarpetaInfo")
-    file_path = os.path.join(folder_path, file.filename)
+# @app.post("/files/upload")
+# async def upload_file(request: Request, file: UploadFile= File(...)):
+#     folder_path = os.path.join(os.path.dirname(__file__),"../CarpetaInfo")
+#     file_path = os.path.join(folder_path, file.filename)
     
-    with open(file_path,"wb") as f:
-        f.write(await file.read())
-    return{"message": f"Archivo '{file.filename}' subido correctamente a la carpeta."}
+#     with open(file_path,"wb") as f:
+#         f.write(await file.read())
+#     return{"message": f"Archivo '{file.filename}' subido correctamente a la carpeta."}  
+
+@app.post("/files/upload")
+async def upload_file(
+    request: Request,
+    file: UploadFile = File(...),
+    user_id: int = Cookie(None),
+    db: Session = Depends(get_db)
+):
+    # Verificar que se encuentre el user_id en la cookie
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Usuario no autenticado (cookie ausente)")
+
+    # Obtener el usuario a partir del user_id
+    user = get_user_by_id(int(user_id), db)
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    # Obtener el id_area y, a partir de éste, el nombre real del área
+    area_id = user["id_area"]
+    area_name = await get_area_by_id(area_id, db)
+    if not area_name:
+        raise HTTPException(status_code=404, detail="Área no encontrada en la base de datos")
+
+    # Sanitizar el nombre del área para formar el nombre de la carpeta (ej. "Recursos Humanos" → "Recursos_Humanos")
+    sanitized_area = area_name.strip().replace(" ", "_")
+
+    # Definir la carpeta base donde se almacenan los archivos (por ejemplo, en "../Areas")
+    base_folder = os.path.join(os.path.dirname(__file__), "../Areas")
+    # Construir la ruta a la carpeta del área
+    folder_path = os.path.join(base_folder, sanitized_area)
+
+    # Crear la carpeta si no existe
+    if not os.path.exists(folder_path):
+        try:
+            os.makedirs(folder_path)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error al crear la carpeta: {str(e)}")
+
+    # Definir la ruta completa donde se guardará el archivo
+    file_path = os.path.join(folder_path, file.filename)
+
+    # Guardar el archivo
+    try:
+        with open(file_path, "wb") as f:
+            f.write(await file.read())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al guardar el archivo: {str(e)}")
+
+    return JSONResponse(content={"message": f"Archivo '{file.filename}' subido correctamente a la carpeta '{sanitized_area}'."})
+
 
 
 @app.api_route("/files/{folder}/{file_name}", methods=["GET", "HEAD", "DELETE"])

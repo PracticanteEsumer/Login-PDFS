@@ -13,7 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap");
-      
+
       body {
         font-family: "Poppins", sans-serif;
         font-size: 16px;
@@ -21,14 +21,14 @@
         padding: 0;
         box-sizing: border-box;
       }
-      
+
       /* Estilos para SweetAlert */
       .swal2-popup {
         background-color: #f4f4f9;
         border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
       }
-      
+
       /* Navbar */
       .navbar {
         position: fixed;
@@ -40,18 +40,25 @@
         color: white;
         padding: 20px;
         border-radius: 0 5px 5px 0;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
       }
-      .navbar ul { list-style-type: none; padding: 0; }
-      .navbar li { margin: 20px 0; }
+      .navbar ul {
+        list-style-type: none;
+        padding: 0;
+      }
+      .navbar li {
+        margin: 20px 0;
+      }
       .navbar a {
-        color: rgb(255,255,255);
+        color: rgb(255, 255, 255);
         text-decoration: none;
         font-weight: 600;
         text-transform: uppercase;
         display: block;
       }
-      .navbar a:hover { color: rgb(228,213,213); }
+      .navbar a:hover {
+        color: rgb(228, 213, 213);
+      }
       #logout-btn {
         background-color: #ff0000;
         color: white;
@@ -68,13 +75,12 @@
         bottom: 70px;
         left: 19%;
       }
-      
+
       /* Contenido */
       .container {
         margin-left: 180px;
         padding: 20px;
       }
-
     </style>
     <title>Vista viewer</title>
   </head>
@@ -90,13 +96,17 @@
         </button>
       </ul>
     </div>
-    
+
     <div class="container">
       <!-- Logo -->
       <div class="logo-container">
-        <img src="/static/img/ESUMERLOGO.png" alt="imagen superior" class="top-image" />
+        <img
+          src="/static/img/ESUMERLOGO.png"
+          alt="imagen superior"
+          class="top-image"
+        />
       </div>
-      
+
       <!-- Tabla para mostrar archivos -->
       <table class="files-table">
         <thead>
@@ -109,7 +119,7 @@
           <!-- Se cargarán los archivos dinámicamente -->
         </tbody>
       </table>
-      
+
       <!-- Paginador -->
       <div class="paginator-container">
         <button id="prev-page" class="page-btn">Anterior</button>
@@ -117,7 +127,7 @@
         <button id="next-page" class="page-btn">Siguiente</button>
       </div>
     </div>
-    
+
     <script>
       const filesPerPage = 5;
       let currentPage = 1;
@@ -137,7 +147,8 @@
         const pageInfo = document.getElementById("page-info");
         pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
         document.getElementById("prev-page").disabled = currentPage === 1;
-        document.getElementById("next-page").disabled = currentPage === totalPages;
+        document.getElementById("next-page").disabled =
+          currentPage === totalPages;
       }
 
       // Función para cargar archivos y dividirlos en páginas
@@ -155,19 +166,22 @@
           const data = await response.json();
           allFiles = data.files;
           const folder = data.folder; // Nombre de la carpeta, por ejemplo "newarea"
-          
+
           // Calcular la porción de archivos para la página actual
           const startIndex = (page - 1) * filesPerPage;
-          const filesToDisplay = allFiles.slice(startIndex, startIndex + filesPerPage);
-          
+          const filesToDisplay = allFiles.slice(
+            startIndex,
+            startIndex + filesPerPage
+          );
+
           // Limpiar el contenedor de archivos
           const filesContainer = document.getElementById("files-container");
           filesContainer.innerHTML = "";
-          
+
           // Crear filas para cada archivo
           filesToDisplay.forEach((file) => {
             const row = document.createElement("tr");
-            
+
             // Celda con el enlace para visualizar el archivo
             const nameCell = document.createElement("td");
             const fileLink = document.createElement("a");
@@ -177,19 +191,19 @@
             fileLink.className = "file-name";
             fileLink.target = "_blank";
             // Al hacer clic, se muestra el PDF en un modal (sin opciones de descarga)
-            fileLink.addEventListener("click", function(event) {
+            fileLink.addEventListener("click", function (event) {
               event.preventDefault();
               viewPDF(event, fileLink.href);
             });
             nameCell.appendChild(fileLink);
             row.appendChild(nameCell);
-            
+
             // Celda de acciones: botón para descargar el archivo
             const actionsCell = document.createElement("td");
             const downloadBtn = document.createElement("button");
             downloadBtn.className = "download-btn";
             downloadBtn.innerHTML = '<i class="bi bi-download"></i>';
-            downloadBtn.addEventListener("click", function() {
+            downloadBtn.addEventListener("click", function () {
               const link = document.createElement("a");
               // Usar la misma ruta para descargar
               link.href = `/files/${folder}/${file}`;
@@ -198,10 +212,10 @@
             });
             actionsCell.appendChild(downloadBtn);
             row.appendChild(actionsCell);
-            
+
             filesContainer.appendChild(row);
           });
-          
+
           updatePagination();
         } catch (error) {
           console.error("Error al cargar archivos:", error);
@@ -212,90 +226,111 @@
 
       // Función para mostrar el PDF en un modal (solo visualización)
       function viewPDF(event, fileUrl) {
-        event.preventDefault();
-        // Utilizamos fetch para obtener el PDF como ArrayBuffer y renderizarlo con PDF.js
+        event.preventDefault(); // Evita la acción predeterminada del enlace
+
+        // Realiza fetch del PDF como ArrayBuffer para usarlo con PDF.js
         fetch(fileUrl)
-          .then(response => {
+          .then((response) => {
             if (!response.ok) {
               throw new Error("Error al cargar el PDF.");
             }
             return response.arrayBuffer();
           })
-          .then(buffer => {
+          .then((buffer) => {
             const pdfData = new Uint8Array(buffer);
-            pdfjsLib.getDocument({ data: pdfData }).promise.then(pdfDoc => {
-              pdfDoc.getPage(1).then(page => {
-                const scale = 1.0; // Ajusta el zoom si es necesario
-                const viewport = page.getViewport({ scale: scale });
-                const canvas = document.createElement("canvas");
-                const context = canvas.getContext("2d");
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-                
-                const renderContext = {
-                  canvasContext: context,
-                  viewport: viewport
-                };
-                page.render(renderContext).promise.then(() => {
-                  // Crear modal para mostrar el PDF renderizado
-                  const modal = document.createElement("div");
-                  modal.style.position = "fixed";
-                    modal.style.top = "0";
-                    modal.style.left = "0";
-                    modal.style.width = "100%";
-                    modal.style.height = "100%";
-                    modal.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
-                    modal.style.display = "flex";
-                    modal.style.alignItems = "center";
-                    modal.style.justifyContent = "center";
-                    modal.style.zIndex = "1000";
-                  
-                  const modalContent = document.createElement("div");
-                  modalContent.style.backgroundColor = "#fff";
-                  modalContent.style.width = "90%";
-                  modalContent.style.height = "90%";
-                  modalContent.style.borderRadius = "8px";
-                  modalContent.style.overflow = "auto";
-                  modalContent.style.position = "relative";
-                  modalContent.appendChild(canvas);
-                  
-                  // Botón de cierre del modal
-                  const closeBtn = document.createElement("button");
-                  closeBtn.textContent = "Cerrar";
-                  closeBtn.style.position = "absolute";
-                  closeBtn.style.top = "10px";
-                  closeBtn.style.right = "10px";
-                  closeBtn.style.zIndex = "10";
-                  closeBtn.style.padding = "10px 20px";
-                  closeBtn.style.backgroundColor = "#202b52";
-                  closeBtn.style.color = "#fff";
-                  closeBtn.style.border = "none";
-                  closeBtn.style.borderRadius = "5px";
-                  closeBtn.style.cursor = "pointer";
-                  closeBtn.addEventListener("click", function () {
-                    document.body.removeChild(modal);
+            // Cargar el documento PDF con PDF.js
+            pdfjsLib
+              .getDocument({ data: pdfData })
+              .promise.then((pdfDoc) => {
+                // Renderizamos la primera página (ajusta para múltiples páginas si lo necesitas)
+                pdfDoc.getPage(1).then((page) => {
+                  // Ajusta este valor para controlar el zoom del PDF
+                  const scale = 0.8; // Puedes cambiarlo para aumentar o disminuir el zoom
+                  const viewport = page.getViewport({ scale: scale });
+                  const canvas = document.createElement("canvas");
+                  const context = canvas.getContext("2d");
+
+                  // Define el tamaño del canvas según el viewport
+                  canvas.width = viewport.width;
+                  canvas.height = viewport.height;
+
+                  const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport,
+                  };
+
+                  page.render(renderContext).promise.then(() => {
+                    // Crear el contenedor modal para mostrar el PDF
+                    const modal = document.createElement("div");
+                    // Estilos editables para el modal (contenedor de toda la pantalla)
+                    modal.style.position = "fixed"; // Posición fija
+                    modal.style.top = "0"; // Desde el borde superior
+                    modal.style.left = "0"; // Desde el borde izquierdo
+                    modal.style.width = "100%"; // Ancho completo
+                    modal.style.height = "100%"; // Altura completa
+                    modal.style.backgroundColor = "rgba(0, 0, 0, 0.7)"; // Fondo semitransparente
+                    modal.style.display = "flex"; // Flex para centrar el contenido horizontalmente
+                    modal.style.alignItems = "center"; // Centrado vertical (en el modal global)
+                    modal.style.justifyContent = "center"; // Centrado horizontal (en el modal global)
+                    modal.style.zIndex = "1000"; // Por encima de otros elementos
+
+                    // Contenedor interno del modal con scroll y estilos editables
+                    const modalContent = document.createElement("div");
+                    modalContent.style.backgroundColor = "#fff"; // Fondo blanco (editable)
+                    modalContent.style.width = "95%"; // Ancho editable
+                    // En lugar de una altura fija, se usa maxHeight para que, si el contenido es mayor, se habilite el scroll
+                    modalContent.style.maxHeight = "95vh"; // Altura máxima editable
+                    modalContent.style.height = "auto"; // Altura automática para ajustarse al contenido
+                    modalContent.style.borderRadius = "8px"; // Bordes redondeados (editable)
+                    modalContent.style.overflow = "auto"; // Permite scroll cuando el contenido exceda el contenedor
+                    modalContent.style.position = "relative"; // Para posicionar el botón de cierre
+                    // Uso de flexbox para el contenido interno, alineándolo al inicio
+                    modalContent.style.display = "flex";
+                    modalContent.style.flexDirection = "column";
+                    modalContent.style.alignItems = "center"; // Centrado horizontal (editable)
+                    modalContent.style.justifyContent = "flex-start"; // Alinea al inicio para evitar recortes verticales
+
+                    // Añadir el canvas (PDF renderizado) al contenedor
+                    modalContent.appendChild(canvas);
+
+                    // Botón de cierre del modal con estilos editables
+                    const closeBtn = document.createElement("button");
+                    closeBtn.textContent = "Cerrar";
+                    closeBtn.style.position = "absolute"; // Posición absoluta dentro del contenedor
+                    closeBtn.style.top = "10px"; // Distancia desde la parte superior (editable)
+                    closeBtn.style.right = "10px"; // Distancia desde la parte derecha (editable)
+                    closeBtn.style.padding = "10px 20px"; // Espaciado interno (editable)
+                    closeBtn.style.backgroundColor = "#202b52"; // Color de fondo (editable)
+                    closeBtn.style.color = "#fff"; // Color del texto (editable)
+                    closeBtn.style.border = "none"; // Sin borde (editable)
+                    closeBtn.style.borderRadius = "5px"; // Bordes redondeados (editable)
+                    closeBtn.style.cursor = "pointer"; // Cursor de mano al pasar el mouse
+                    closeBtn.addEventListener("click", function () {
+                      document.body.removeChild(modal);
+                    });
+
+                    // Agregar el botón de cierre y el contenido al modal
+                    modalContent.appendChild(closeBtn);
+                    modal.appendChild(modalContent);
+                    document.body.appendChild(modal);
                   });
-                  
-                  modalContent.appendChild(closeBtn);
-                  modal.appendChild(modalContent);
-                  document.body.appendChild(modal);
+                });
+              })
+              .catch((error) => {
+                console.error("Error al renderizar el PDF:", error);
+                Swal.fire({
+                  title: "Error",
+                  text: "No se pudo cargar el PDF.",
+                  icon: "error",
                 });
               });
-            }).catch(error => {
-              console.error("Error al renderizar el PDF:", error);
-              Swal.fire({
-                title: "Error",
-                text: "No se pudo cargar el PDF.",
-                icon: "error"
-              });
-            });
           })
-          .catch(error => {
+          .catch((error) => {
             console.error("Error al cargar el PDF:", error);
             Swal.fire({
               title: "Error",
               text: "No se pudo cargar el PDF.",
-              icon: "error"
+              icon: "error",
             });
           });
       }
