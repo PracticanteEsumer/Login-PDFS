@@ -1,35 +1,74 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="static/css/style.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="static/css/style.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>Inicio de Sesión</title>
-</head>
-<body>
-    <form id="login-form" method="POST" action="/login"> </form>
+  </head>
+  <body>
     <div class="container">
-        <div class="logo-container">
-            <img src="/static/img/ESUMERLOGO.png" alt="imagen superior" class="top-image">
+      <div class="logo-container">
+        <img src="/static/img/ESUMERLOGO.png" alt="imagen superior" class="top-image" />
+      </div>
+      
+      <!-- Formulario de inicio de sesión -->
+      <form class="login-form" id="login-form" method="POST" action="/login" autocomplete="off">
+        <label class="welcome-message">INICIA DE SESIÓN</label>
+        <div class="input-container">
+          <input class="input" type="text" id="strUsuario" name="strUsuario" placeholder="USUARIO" required autocomplete="off">
         </div>
-        
-        <!-- Formulario de inicio de sesión -->
-        <form class="login-form" id="login-form" method="POST" action="/login" autocomplete="off">
-            <label class="welcome-message">INICIA DE SESIÓN</label>
-            <div class="input-container">
-                <input class="input" type="text" id="strUsuario" name="strUsuario" placeholder="USUARIO" required autocomplete="off">
-            </div>
-            <div class="input-container">
-                <input class="input" type="password" id="strContrasenna" name="strContrasenna" placeholder="CONTRASEÑA" required autocomplete="off">
-            </div>
-            <button type="submit" class="submit-btn">INICIO</button>
-        </form>
-
-
-        <!-- Mensaje de error -->
-        <div id="error-message" style="display:none;">
-            <p>Usuario o contraseña incorrectos.</p>
+        <div class="input-container">
+          <input class="input" type="password" id="strContrasenna" name="strContrasenna" placeholder="CONTRASEÑA" required autocomplete="off">
         </div>
+        <button type="submit" class="submit-btn">INICIO</button>
+      </form>
+
+      <!-- Mensaje de error (opcional, en caso de que quieras mantenerlo visible) -->
+      <div id="error-message" style="display:none;">
+        <p>Usuario o contraseña incorrectos.</p>
+      </div>
     </div>
-</body>
+
+    <script>
+      // Interceptamos el envío del formulario para manejar la respuesta con SweetAlert
+      document.getElementById("login-form").addEventListener("submit", async function(event) {
+        event.preventDefault(); // Evita el envío tradicional del formulario
+
+        const formData = new FormData(this);
+
+        try {
+          const response = await fetch("/login", {
+            method: "POST",
+            body: formData
+          });
+
+          if (response.ok) {
+            // Si la respuesta es exitosa, redirige al usuario a la URL resultante
+            window.location.href = response.url;
+          } else {
+            // Si las credenciales son incorrectas u ocurre otro error, se muestra SweetAlert
+            const errorData = await response.json();
+            Swal.fire({
+              title: "Error",
+              text: errorData.detail || "Usuario o contraseña incorrectos.",
+              icon: "error"
+            });
+          }
+        } catch (error) {
+          console.error("Error al enviar el formulario:", error);
+          Swal.fire({
+            title: "Error",
+            text: "Ocurrió un error al conectar con el servidor.",
+            icon: "error"
+          });
+        }
+      });
+    </script>
+  </body>
 </html>

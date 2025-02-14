@@ -136,13 +136,6 @@ async def login(
     return response
 
 
-
-
-
-
-
-
-
 # RUTAS DE USUARIOS 
 @app.get("/users", response_class=HTMLResponse)
 async def list_users():
