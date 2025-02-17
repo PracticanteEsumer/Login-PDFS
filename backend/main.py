@@ -725,29 +725,55 @@ def update_area(id: int, name: str, description: str ,db: Session):
 @app.put("/areasUpdate/{id}")
 async def update_area_endpoint(
     id: int,
-    area_data: AreaUpdate = Depends(get_area_update)
+    area_data: AreaUpdate = Depends(get_area_update),
+    db: Session = Depends(get_db)
 ):
     try:
         connection = get_db()
         cursor = connection.cursor(dictionary=True)
 
+        # Obtener el nombre actual del área antes de actualizar
+        cursor.execute("SELECT str_name_area FROM tbl_areas WHERE id = %s", (id,))
+        existing_area = cursor.fetchone()
+
+        if not existing_area:
+            raise HTTPException(status_code=404, detail="Área no encontrada")
+
+        old_name = existing_area["str_name_area"]
+        new_name = area_data.str_name_area
+
+        # Actualizar en la base de datos
         query = """
             UPDATE tbl_areas
             SET str_name_area = %s, str_description = %s
             WHERE id = %s
         """
         values = (
-            area_data.str_name_area,
+            new_name,
             area_data.str_description,
             id
         )
 
         cursor.execute(query, values)
         connection.commit()
+
+        # Renombrar carpeta si el nombre ha cambiado
+        if old_name != new_name:
+            base_folder = os.path.join(os.path.dirname(__file__), "../Areas")
+            old_folder_path = os.path.join(base_folder, old_name.strip().replace(" ", "_"))
+            new_folder_path = os.path.join(base_folder, new_name.strip().replace(" ", "_"))
+
+            if os.path.exists(old_folder_path):
+                try:
+                    os.rename(old_folder_path, new_folder_path)
+                except Exception as e:
+                    raise HTTPException(status_code=500, detail=f"Error al renombrar la carpeta: {str(e)}")
+
         cursor.close()
         connection.close()
 
-        return {"message": "Area actualizada correctamente."}
+        return {"message": "Área actualizada correctamente."}
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error en la actualización: {str(e)}")
     
